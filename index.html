@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="emerald-dark">
+<head>
+    <!--
+    --------------------------------------------------
+    Project Name : Noor Al-Quran
+    Designed & Developed By : Eng. Yahya Nabil
+    Copyright © 2026 Eng. Yahya Nabil
+    All Rights Reserved.
+    --------------------------------------------------
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noor Al-Quran — The Supreme Digital Quran Experience</title>
+    <meta name="description" content="An exquisite, production-ready Holy Quran web application designed by Eng. Yahya Nabil.">
+    <meta name="author" content="Eng. Yahya Nabil">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" aria-hidden="true">
+        <div class="loader-content">
+            <div class="gold-seal">⁠☪</div>
+            <h2>Noor Al-Quran</h2>
+            <p>Loading Divine Tranquility...</p>
+        </div>
+    </div>
+
+    <!-- App Shell -->
+    <div class="app-shell">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" aria-label="Main Navigation">
+            <div class="brand">
+                <span class="brand-icon">☪</span>
+                <h1>Noor Al-Quran</h1>
+                <small>By Eng. Yahya Nabil</small>
+            </div>
+            <nav class="nav-links">
+                <button class="nav-btn active" data-view="home">
+                    <span class="icon">📖</span> Home / Surahs
+                </button>
+                <button class="nav-btn" data-view="reader">
+                    <span class="icon">📜</span> Reader
+                </button>
+                <button class="nav-btn" data-view="tools">
+                    <span class="icon">🧭</span> Tools & Qibla
+                </button>
+                <button class="nav-btn" data-view="bookmarks">
+                    <span class="icon">⭐</span> Bookmarks
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <span class="icon">⚙️</span> Settings
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>© 2026 Eng. Yahya Nabil</p>
+                <p class="signature">Designed with passion for the Holy Quran.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header Bar -->
+            <header class="top-header">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="global-search" placeholder="Search Surah, Verse, or Keyword..." aria-label="Search Quran">
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn" title="Toggle Theme">🌓</button>
+                    <button id="audio-quick-play" class="icon-btn" title="Quick Recitation">🎧</button>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div class="views-container">
+                <!-- Home View -->
+                <section id="view-home" class="view active">
+                    <div class="hero-card glass-card">
+                        <div class="hero-badge">Daily Reflection</div>
+                        <h2 id="daily-verse-arabic">إِنَّ مَعَ الْعُسْرِ يُسْرًا</h2>
+                        <p id="daily-verse-translation">"Indeed, with hardship [will be] ease." (Surah Ash-Sharh: 6)</p>
+                    </div>
+                    
+                    <div class="section-header">
+                        <h3>Surah Index</h3>
+                        <div class="filter-tabs">
+                    <button class="tab active" data-filter="all">All Surahs</button>
+                            <button class="tab" data-filter="meccan">Meccan</button>
+                            <button class="tab" data-filter="medinan">Medinan</button>
+                        </div>
+                    </div>
+
+                    <div id="surah-grid" class="surah-grid">
+                        <!-- Dynamic Surah Cards Rendered Here -->
+                    </div>
+                </section>
+
+                <!-- Reader View -->
+                <section id="view-reader" class="view">
+                    <div class="reader-toolbar glass-card">
+                        <h2 id="current-surah-title">Al-Fatihah</h2>
+                        <div class="reader-controls">
+                            <select id="reciter-select" aria-label="Select Reciter">
+                                <option value="ar.alafasy">Mishary Rashid Alafasy</option>
+                                <option value="ar.abdulbasit">Abdul Basit</option>
+                                <option value="ar.sudais">Abdurrahman As-Sudais</option>
+                            </select>
+                            <button id="play-surah-audio" class="primary-btn">▶ Play Audio</button>
+                        </div>
+                    </div>
+                    <div id="verses-container" class="verses-container">
+                        <!-- Dynamic Verses Rendered Here -->
+                    </div>
+                </section>
+
+                <!-- Tools View -->
+                <section id="view-tools" class="view">
+                    <div class="tools-grid">
+                        <div class="tool-card glass-card">
+                            <h3>🧭 Qibla Compass</h3>
+                            <div class="compass-container">
+                                <div class="compass-dial"></div>
+                                <p>Direction to Makkah: <strong>142° SE</strong></p>
+                            </div>
+                        </div>
+                        <div class="tool-card glass-card">
+                            <h3>📿 Digital Tasbeeh</h3>
+                            <div class="tasbeeh-display">
+                                <span id="tasbeeh-count">0</span>
+                                <button id="tasbeeh-btn" class="primary-btn">Count</button>
+                                <button id="tasbeeh-reset" class="secondary-btn">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bookmarks View -->
+                <section id="view-bookmarks" class="view">
+                    <div class="section-header">
+                        <h3>Your Saved Bookmarks</h3>
+                    </div>
+                    <div id="bookmarks-list" class="bookmarks-list">
+                        <p class="empty-state">No bookmarks saved yet.</p>
+                    </div>
+                </section>
+
+                <!-- Settings View -->
+                <section id="view-settings" class="view">
+                    <div class="glass-card settings-card">
+                        <h3>Preferences</h3>
+                        <div class="setting-item">
+                            <label for="font-size-range">Arabic Font Size</label>
+                            <input type="range" id="font-size-range" min="20" max="48" value="32">
+                        </div>
+                        <div class="setting-item">
+                            <label for="font-family-select">Arabic Font</label>
+                            <select id="font-family-select">
+                                <option value="Amiri">Amiri</option>
+                                <option value="Tajawal">Tajawal</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Floating Audio Player -->
+        <div id="floating-player" class="floating-player glass-card hidden">
+            <div class="player-info">
+                <span id="player-title">Surah Al-Fatihah</span>
+                <span id="player-reciter">Mishary Rashid Alafasy</span>
+            </div>
+            <div class="player-controls">
+                <button id="player-play-pause" class="icon-btn">⏸</button>
+                <button id="player-close" class="icon-btn">✕</button>
+            </div>
+            <audio id="audio-element"></audio>
+        </div>
+    </div>
+
+    <!-- Professional Footer -->
+    <footer class="app-footer">
+        <p>© 2026 Eng. Yahya Nabil — All Rights Reserved.</p>
+        <p class="signature">Project Signature: Designed with passion for the Holy Quran.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>        
