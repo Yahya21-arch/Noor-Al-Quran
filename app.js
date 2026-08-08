@@ -164,6 +164,41 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSection.ayahs.push(a);
         });
 
+        // Detect/remove the duplicated Basmala from the first ayah only.
+        // This changes display only; the original API data is never modified.
+        const normalizeArabic = value => String(value ?? '')
+            .replace(/[\u064B-\u065F\u0670]/g, '')
+            .replace(/[ٱأإآ]/g, 'ا')
+            .replace(/ى/g, 'ي')
+            .replace(/ـ/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const BASMALA_WORDS = ['بسم', 'الله', 'الرحمن', 'الرحيم'];
+        const BASMALA_NORMALIZED = BASMALA_WORDS.join(' ');
+
+        const stripLeadingBasmala = (text, isFirstAyah, surahNumber) => {
+            const original = String(text ?? '');
+            if (!isFirstAyah || Number(surahNumber) === 9 || !original.trim()) {
+                return original;
+            }
+
+            const words = original.trim().split(/\s+/);
+            const normalizedWords = words.map(normalizeArabic);
+
+            // Match the first four normalized words instead of relying on an
+            // exact Unicode string. This handles Uthmani variants such as
+            // ٱ / أ / إ and different harakat/marks.
+            const isBasmalaPrefix = BASMALA_WORDS.every(
+                (word, index) => normalizedWords[index] === word
+            );
+
+            if (!isBasmalaPrefix) return original;
+
+            // Remove only the Basmala words from the beginning.
+            return words.slice(4).join(' ').trim();
+        };
+
         const sectionHTML = sections.map(section => {
             const surah = section.surah || {};
             const heading = section.startsSurah ? `
@@ -172,14 +207,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             ` : '';
 
+            const firstSectionAyah = section.ayahs.find(a => Number(a.numberInSurah) === 1);
+            const firstSectionAyahIsBasmala = !!firstSectionAyah &&
+                normalizeArabic(firstSectionAyah.text) === normalizeArabic('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ');
+
             // Surah At-Tawbah (9) has no Basmala at its beginning.
+            // For Al-Fatihah, the fixed Basmala itself represents Ayah 1 so it
+            // remains playable/highlightable without rendering the text twice.
             const basmala = section.startsSurah && Number(surah.number) !== 9 ? `
-                <div class="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                <div class="basmala${firstSectionAyahIsBasmala ? ' mushaf-basmala-ayah' : ''}${firstSectionAyahIsBasmala && Number(firstSectionAyah.number) === Number(focusAyahNumber) ? ' active-ayah' : ''}"${firstSectionAyahIsBasmala ? ` data-ayah="${firstSectionAyah.number}" data-surah="${surah.number}" data-ayah-in-surah="${firstSectionAyah.numberInSurah}" tabindex="0"` : ''}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
             ` : '';
 
+
+            const firstAyah = section.ayahs.find(a => Number(a.numberInSurah) === 1);
+            const firstAyahIsBasmala = !!firstAyah &&
+                normalizeArabic(firstAyah.text) === BASMALA_NORMALIZED;
+
             const ayahHTML = section.ayahs.map(a => {
+                const isFirstAyah = Number(a.numberInSurah) === 1;
+                const text = stripLeadingBasmala(a.text, isFirstAyah, surah.number);
                 const active = Number(a.number) === Number(focusAyahNumber) ? ' active-ayah' : '';
-                return `<span class="mushaf-ayah${active}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(a.text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
+
+                // If the first Ayah consists only of the Basmala (e.g. Al-Fatihah),
+                // the fixed Basmala above represents that Ayah, so do not render it
+                // a second time here.
+                if (!text && isFirstAyah && firstAyahIsBasmala) return '';
+
+                return `<span class="mushaf-ayah${active}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
             }).join(' ');
 
             return `
@@ -433,8 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Number(ayah.page) !== Number(state.currentPage)) {
             await renderReaderPage(ayah.page, ayah.number, false);
         } else {
-            document.querySelectorAll('.mushaf-ayah').forEach(el => el.classList.remove('active-ayah'));
-            const el = container.querySelector(`[data-ayah="${ayah.number}"]`);
+            container.querySelectorAll('.mushaf-ayah, .mushaf-basmala-ayah').forEach(el => el.classList.remove('active-ayah'));
+            const el = container.querySelector(`.mushaf-ayah[data-ayah="${ayah.number}"], .mushaf-basmala-ayah[data-ayah="${ayah.number}"]`);
             if (el) {
                 el.classList.add('active-ayah');
                 el.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -622,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Click any ayah in the Mushaf to start its recitation.
     container.addEventListener('click', e => {
-        const ayahEl = e.target.closest('.mushaf-ayah');
+        const ayahEl = e.target.closest('.mushaf-ayah, .mushaf-basmala-ayah');
         if (!ayahEl) return;
         const number = Number(ayahEl.dataset.ayah);
         const ayah = getPageAyahs().find(a => Number(a.number) === number);
