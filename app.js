@@ -134,36 +134,66 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPage(data, focusAyahNumber = null) {
         const ayahs = data.ayahs || [];
         const first = ayahs[0];
-        const last = ayahs[ayahs.length - 1];
 
         if (first?.surah) {
             state.currentSurah = first.surah.number;
             $('current-surah-title').textContent = first.surah.englishName || first.surah.name;
         }
 
-        const surahBreaks = [];
-        ayahs.forEach((a, i) => {
-            if (i === 0 || a.surah?.number !== ayahs[i - 1].surah?.number) {
-                surahBreaks.push(a);
+        // IMPORTANT: Keep each Surah heading/Basmala immediately before
+        // the Surah's own ayahs. The old implementation rendered all
+        // headings first, which caused short Surahs on the same Mushaf
+        // page to appear visually mixed together.
+        const sections = [];
+        let currentSurahNumber = null;
+        let currentSection = null;
+
+        ayahs.forEach((a) => {
+            const surahNumber = Number(a.surah?.number);
+
+            if (surahNumber !== currentSurahNumber) {
+                currentSurahNumber = surahNumber;
+                currentSection = {
+                    surah: a.surah,
+                    ayahs: [],
+                    startsSurah: Number(a.numberInSurah) === 1
+                };
+                sections.push(currentSection);
             }
+
+            currentSection.ayahs.push(a);
         });
 
-        const headings = surahBreaks.map(a => `
-            <div class="mushaf-surah-heading">
-                <span>${escapeHTML(a.surah?.name || '')}</span>
-            </div>
-            ${a.numberInSurah === 1 && a.surah?.number !== 9 ? '<div class="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : ''}
-        `).join('');
+        const sectionHTML = sections.map(section => {
+            const surah = section.surah || {};
+            const heading = section.startsSurah ? `
+                <div class="mushaf-surah-heading" aria-label="${escapeHTML(surah.name || '')}">
+                    <span>${escapeHTML(surah.name || '')}</span>
+                </div>
+            ` : '';
 
-        const text = ayahs.map(a => {
-            const active = Number(a.number) === Number(focusAyahNumber) ? ' active-ayah' : '';
-            return `<span class="mushaf-ayah${active}" data-ayah="${a.number}" data-surah="${a.surah?.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(a.text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
-        }).join(' ');
+            // Surah At-Tawbah (9) has no Basmala at its beginning.
+            const basmala = section.startsSurah && Number(surah.number) !== 9 ? `
+                <div class="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+            ` : '';
+
+            const ayahHTML = section.ayahs.map(a => {
+                const active = Number(a.number) === Number(focusAyahNumber) ? ' active-ayah' : '';
+                return `<span class="mushaf-ayah${active}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(a.text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
+            }).join(' ');
+
+            return `
+                <section class="mushaf-surah-section" data-surah-section="${surah.number || ''}">
+                    ${heading}
+                    ${basmala}
+                    <div class="mushaf-ayah-flow">${ayahHTML}</div>
+                </section>
+            `;
+        }).join('');
 
         container.innerHTML = `
             <div class="mushaf-inner">
-                ${headings}
-                <div class="mushaf-text" lang="ar">${text}</div>
+                <div class="mushaf-text" lang="ar">${sectionHTML}</div>
                 <div class="mushaf-meta">
                     <span>Juz ${first?.juz || ''}</span>
                     <span>Hizb ${first?.hizbQuarter || ''}</span>

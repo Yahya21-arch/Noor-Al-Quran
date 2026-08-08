@@ -136,3 +136,63 @@ button,input,select{font:inherit}
     .mushaf-toolbar>button{padding:.55rem .7rem}.page-jump{order:3;width:100%;justify-content:center}
     .mushaf-text{font-size:var(--reader-font-size);line-height:2.05}
 }
+
+/* Mushaf page flow fix: Surah headings and Basmala stay with the
+   beginning of their own Surah instead of being collected at the top. */
+.mushaf-surah-section {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+.mushaf-surah-section + .mushaf-surah-section {
+    margin-top: .45rem;
+}
+.mushaf-surah-heading {
+    display: block;
+    width: min(92%, 760px);
+    margin: 1.1rem auto .55rem;
+    padding: .35rem .8rem;
+    text-align: center;
+    font-family: var(--font-arabic);
+    font-size: 1.7rem;
+    line-height: 1.45;
+    color: var(--gold);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(212,175,55,.035);
+}
+.mushaf-surah-section:first-child .mushaf-surah-heading {
+    margin-top: 0;
+}
+.basmala {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-family: var(--font-arabic);
+    font-size: 1.55rem;
+    line-height: 1.7;
+    margin: .25rem auto .55rem;
+    color: var(--text-main);
+}
+.mushaf-ayah-flow {
+    display: block;
+    direction: rtl;
+    text-align: justify;
+    text-align-last: center;
+}
+.mushaf-ayah {
+    display: inline;
+}
+
+@media(max-width:768px){
+    .mushaf-surah-heading {
+        width: 94%;
+        margin: .8rem auto .4rem;
+        font-size: 1.4rem;
+    }
+    .basmala {
+        font-size: 1.3rem;
+        margin-bottom: .4rem;
+    }
+}
