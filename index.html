@@ -20,7 +20,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loading-screen" aria-hidden="true">
         <div class="loader-content">
             <div class="gold-seal">⁠☪</div>
@@ -29,9 +28,7 @@
         </div>
     </div>
 
-    <!-- App Shell -->
     <div class="app-shell">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar" aria-label="Main Navigation">
             <div class="brand">
                 <span class="brand-icon">☪</span>
@@ -39,21 +36,11 @@
                 <small>By Eng. Yahya Nabil</small>
             </div>
             <nav class="nav-links">
-                <button class="nav-btn active" data-view="home">
-                    <span class="icon">📖</span> Home / Surahs
-                </button>
-                <button class="nav-btn" data-view="reader">
-                    <span class="icon">📜</span> Reader
-                </button>
-                <button class="nav-btn" data-view="tools">
-                    <span class="icon">🧭</span> Tools & Qibla
-                </button>
-                <button class="nav-btn" data-view="bookmarks">
-                    <span class="icon">⭐</span> Bookmarks
-                </button>
-                <button class="nav-btn" data-view="settings">
-                    <span class="icon">⚙️</span> Settings
-                </button>
+                <button class="nav-btn active" data-view="home"><span class="icon">📖</span> Home / Surahs</button>
+                <button class="nav-btn" data-view="reader"><span class="icon">📜</span> Reader</button>
+                <button class="nav-btn" data-view="tools"><span class="icon">🧭</span> Tools & Qibla</button>
+                <button class="nav-btn" data-view="bookmarks"><span class="icon">⭐</span> Bookmarks</button>
+                <button class="nav-btn" data-view="settings"><span class="icon">⚙️</span> Settings</button>
             </nav>
             <div class="sidebar-footer">
                 <p>© 2026 Eng. Yahya Nabil</p>
@@ -61,9 +48,7 @@
             </div>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Header Bar -->
             <header class="top-header">
                 <div class="search-bar">
                     <span class="search-icon">🔍</span>
@@ -75,34 +60,34 @@
                 </div>
             </header>
 
-            <!-- Views Container -->
             <div class="views-container">
-                <!-- Home View -->
                 <section id="view-home" class="view active">
                     <div class="hero-card glass-card">
                         <div class="hero-badge">Daily Reflection</div>
                         <h2 id="daily-verse-arabic">إِنَّ مَعَ الْعُسْرِ يُسْرًا</h2>
                         <p id="daily-verse-translation">"Indeed, with hardship [will be] ease." (Surah Ash-Sharh: 6)</p>
                     </div>
-                    
+
+                    <div id="search-results" class="search-results hidden"></div>
+
                     <div class="section-header">
                         <h3>Surah Index</h3>
                         <div class="filter-tabs">
-                    <button class="tab active" data-filter="all">All Surahs</button>
+                            <button class="tab active" data-filter="all">All Surahs</button>
                             <button class="tab" data-filter="meccan">Meccan</button>
                             <button class="tab" data-filter="medinan">Medinan</button>
                         </div>
                     </div>
 
-                    <div id="surah-grid" class="surah-grid">
-                        <!-- Dynamic Surah Cards Rendered Here -->
-                    </div>
+                    <div id="surah-grid" class="surah-grid"></div>
                 </section>
 
-                <!-- Reader View -->
                 <section id="view-reader" class="view">
                     <div class="reader-toolbar glass-card">
-                        <h2 id="current-surah-title">Al-Fatihah</h2>
+                        <div>
+                            <h2 id="current-surah-title">Al-Fatihah</h2>
+                            <div id="reader-status" class="reader-status">Page 1 of 604</div>
+                        </div>
                         <div class="reader-controls">
                             <select id="reciter-select" aria-label="Select Reciter">
                                 <option value="ar.alafasy">Mishary Rashid Alafasy</option>
@@ -112,12 +97,44 @@
                             <button id="play-surah-audio" class="primary-btn">▶ Play Audio</button>
                         </div>
                     </div>
-                    <div id="verses-container" class="verses-container">
-                        <!-- Dynamic Verses Rendered Here -->
+
+                    <div class="mushaf-toolbar glass-card">
+                        <button id="prev-page" class="secondary-btn" title="Previous Page">‹ Previous</button>
+                        <div class="page-jump">
+                            <label for="page-input">Page</label>
+                            <input id="page-input" type="number" min="1" max="604" value="1">
+                            <span>/ 604</span>
+                            <button id="go-page" class="primary-btn">Go</button>
+                        </div>
+                        <div class="reader-toolbar-actions">
+                            <select id="surah-select" aria-label="Select Surah">
+                                <option value="">Select Surah</option>
+                            </select>
+                            <select id="juz-select" aria-label="Select Juz">
+                                <option value="">Select Juz</option>
+                            </select>
+                            <button id="bookmark-page" class="secondary-btn">☆ Bookmark</button>
+                        </div>
+                        <button id="next-page" class="secondary-btn" title="Next Page">Next ›</button>
+                    </div>
+
+                    <div id="page-loading" class="page-loading hidden">Loading Mushaf page…</div>
+
+                    <div id="verses-container" class="verses-container mushaf-page" dir="rtl">
+                        <div class="mushaf-inner">
+                            <div class="mushaf-header">سُورَةُ الْفَاتِحَةِ</div>
+                            <div class="mushaf-text">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                            <div class="mushaf-footer-number">1</div>
+                        </div>
+                    </div>
+
+                    <div class="page-navigation-bottom">
+                        <button id="prev-page-bottom" class="secondary-btn">‹</button>
+                        <span id="page-indicator">1 / 604</span>
+                        <button id="next-page-bottom" class="secondary-btn">›</button>
                     </div>
                 </section>
 
-                <!-- Tools View -->
                 <section id="view-tools" class="view">
                     <div class="tools-grid">
                         <div class="tool-card glass-card">
@@ -138,7 +155,6 @@
                     </div>
                 </section>
 
-                <!-- Bookmarks View -->
                 <section id="view-bookmarks" class="view">
                     <div class="section-header">
                         <h3>Your Saved Bookmarks</h3>
@@ -148,7 +164,6 @@
                     </div>
                 </section>
 
-                <!-- Settings View -->
                 <section id="view-settings" class="view">
                     <div class="glass-card settings-card">
                         <h3>Preferences</h3>
@@ -168,21 +183,24 @@
             </div>
         </main>
 
-        <!-- Floating Audio Player -->
         <div id="floating-player" class="floating-player glass-card hidden">
             <div class="player-info">
                 <span id="player-title">Surah Al-Fatihah</span>
                 <span id="player-reciter">Mishary Rashid Alafasy</span>
+                <span id="audio-status" class="audio-status">Ready</span>
             </div>
             <div class="player-controls">
-                <button id="player-play-pause" class="icon-btn">⏸</button>
-                <button id="player-close" class="icon-btn">✕</button>
+                <button id="player-previous" class="icon-btn" title="Previous Ayah">⏮</button>
+                <button id="player-play-pause" class="icon-btn" title="Play/Pause">⏸</button>
+                <button id="player-repeat" class="icon-btn" title="Repeat Ayah">🔁</button>
+                <button id="player-next" class="icon-btn" title="Next Ayah">⏭</button>
+                <button id="player-stop" class="icon-btn" title="Stop">⏹</button>
+                <button id="player-close" class="icon-btn" title="Close">✕</button>
             </div>
-            <audio id="audio-element"></audio>
+            <audio id="audio-element" preload="none"></audio>
         </div>
     </div>
 
-    <!-- Professional Footer -->
     <footer class="app-footer">
         <p>© 2026 Eng. Yahya Nabil — All Rights Reserved.</p>
         <p class="signature">Project Signature: Designed with passion for the Holy Quran.</p>
@@ -190,4 +208,4 @@
 
     <script src="app.js"></script>
 </body>
-</html>        
+</html>

@@ -8,499 +8,131 @@ All Rights Reserved.
 */
 
 :root {
-    --bg-primary: #0b0f0e;
-    --bg-secondary: #121816;
-    --surface: rgba(25, 33, 30, 0.7);
-    --surface-hover: rgba(35, 48, 43, 0.8);
-    --border: rgba(212, 175, 55, 0.2);
-    --text-main: #f3f4f6;
-    --text-muted: #9ca3af;
-    --gold: #d4af37;
-    --gold-light: #f3e5ab;
-    --emerald: #046307;
-    --emerald-glow: rgba(4, 99, 7, 0.3);
-    --font-arabic: 'Amiri', serif;
-    --font-sans: 'Inter', sans-serif;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --bg-primary:#0b0f0e;
+    --bg-secondary:#121816;
+    --surface:rgba(25,33,30,.7);
+    --surface-hover:rgba(35,48,43,.8);
+    --border:rgba(212,175,55,.2);
+    --text-main:#f3f4f6;
+    --text-muted:#9ca3af;
+    --gold:#d4af37;
+    --gold-light:#f3e5ab;
+    --emerald:#046307;
+    --emerald-glow:rgba(4,99,7,.3);
+    --font-arabic:'Amiri',serif;
+    --font-sans:'Inter',sans-serif;
+    --reader-font-size:32px;
+    --transition:all .3s cubic-bezier(.4,0,.2,1);
 }
-
-[data-theme="light"] {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #ffffff;
-    --surface: rgba(255, 255, 255, 0.8);
-    --surface-hover: rgba(241, 245, 249, 0.9);
-    --border: rgba(212, 175, 55, 0.3);
-    --text-main: #1e293b;
-    --text-muted: #64748b;
+[data-theme="light"]{
+    --bg-primary:#f8fafc;
+    --bg-secondary:#fff;
+    --surface:rgba(255,255,255,.8);
+    --surface-hover:rgba(241,245,249,.9);
+    --border:rgba(212,175,55,.3);
+    --text-main:#1e293b;
+    --text-muted:#64748b;
 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-main);min-height:100vh;overflow-x:hidden}
+button,input,select{font:inherit}
+#loading-screen{position:fixed;inset:0;background:var(--bg-primary);display:flex;justify-content:center;align-items:center;z-index:9999;transition:opacity .5s}
+.loader-content{text-align:center}.gold-seal{font-size:3rem;color:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:.8}}
+.app-shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:2rem 1.5rem;position:sticky;top:0;height:100vh}
+.brand{text-align:center;margin-bottom:2.5rem}.brand-icon{font-size:2.5rem;color:var(--gold)}
+.brand h1{font-size:1.5rem;font-weight:700;color:var(--gold-light);margin-top:.5rem}.brand small{color:var(--text-muted);font-size:.75rem}
+.nav-links{display:flex;flex-direction:column;gap:.75rem;flex:1}
+.nav-btn{background:transparent;border:none;color:var(--text-muted);padding:.875rem 1rem;border-radius:12px;text-align:left;font-size:1rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:1rem;transition:var(--transition)}
+.nav-btn:hover,.nav-btn.active{background:var(--surface-hover);color:var(--gold);border-left:4px solid var(--gold)}
+.sidebar-footer{font-size:.75rem;color:var(--text-muted);text-align:center;border-top:1px solid var(--border);padding-top:1rem}
+.signature{margin-top:.25rem;font-style:italic;color:var(--gold)}
+.main-content{display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.top-header{padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:var(--bg-primary);position:sticky;top:0;z-index:10}
+.search-bar{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:.5rem 1.25rem;width:400px;gap:.75rem}
+.search-bar input{background:transparent;border:none;color:var(--text-main);font-size:.95rem;width:100%;outline:none}
+.header-actions{display:flex;gap:1rem}
+.icon-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-main);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}
+.icon-btn:hover,.icon-btn.active-control{background:var(--gold);color:var(--bg-primary)}
+.views-container{padding:2rem;flex:1}.view{display:none}.view.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glass-card{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:0 8px 32px rgba(0,0,0,.37)}
+.hero-card{text-align:center;background:linear-gradient(135deg,rgba(4,99,7,.2),rgba(212,175,55,.1));margin-bottom:2.5rem}
+.hero-badge{display:inline-block;background:var(--gold);color:var(--bg-primary);padding:.25rem 1rem;border-radius:50px;font-size:.75rem;font-weight:600;text-transform:uppercase;margin-bottom:1rem}
+.hero-card h2{font-family:var(--font-arabic);font-size:2.5rem;color:var(--gold-light);margin-bottom:1rem}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.filter-tabs{display:flex;gap:.5rem}.tab{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:.5rem 1rem;border-radius:50px;cursor:pointer;font-size:.85rem;transition:var(--transition)}
+.tab.active,.tab:hover{background:var(--gold);color:var(--bg-primary)}
+.surah-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
+.surah-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;cursor:pointer;transition:var(--transition);display:flex;justify-content:space-between;align-items:center}
+.surah-card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 10px 20px rgba(212,175,55,.1)}
+.surah-number{width:40px;height:40px;background:rgba(212,175,55,.1);border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--gold)}
+.surah-info h4{font-size:1.1rem;font-weight:600}.surah-info p{font-size:.8rem;color:var(--text-muted)}
+.surah-arabic{font-family:var(--font-arabic);font-size:1.5rem;color:var(--gold-light);text-align:right}
+.reader-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}.reader-controls{display:flex;gap:1rem;align-items:center}
+.reader-controls select,.reader-toolbar-actions select,.page-jump input{background:var(--bg-secondary);color:var(--text-main);border:1px solid var(--border);padding:.55rem .8rem;border-radius:8px;outline:none}
+.reader-status{color:var(--text-muted);font-size:.85rem;margin-top:.25rem}
+.primary-btn,.secondary-btn{border:1px solid var(--border);padding:.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;transition:var(--transition)}
+.primary-btn{background:var(--gold);color:var(--bg-primary);border-color:var(--gold)}.primary-btn:hover{opacity:.9;transform:scale(1.02)}
+.secondary-btn{background:var(--surface);color:var(--text-main)}.secondary-btn:hover{border-color:var(--gold);color:var(--gold)}
+.secondary-btn:disabled,.primary-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.mushaf-toolbar{display:flex;gap:.7rem;align-items:center;justify-content:center;margin-bottom:1rem;padding:1rem;flex-wrap:wrap}
+.page-jump,.reader-toolbar-actions{display:flex;align-items:center;gap:.45rem}.page-jump input{width:72px;text-align:center}
+.verses-container{display:block}
+.mushaf-page{max-width:930px;margin:0 auto;touch-action:pan-y}
+.mushaf-inner{position:relative;background:var(--bg-secondary);border:2px solid var(--gold);border-radius:8px;box-shadow:0 18px 55px rgba(0,0,0,.35);min-height:calc(100vh - 300px);padding:4.5rem 5rem 4.5rem;overflow:hidden}
+.mushaf-inner:before{content:"";position:absolute;inset:12px;border:1px solid var(--border);border-radius:4px;pointer-events:none}
+.mushaf-surah-heading{position:relative;text-align:center;font-family:var(--font-arabic);font-size:1.7rem;color:var(--gold);margin:0 auto 1rem;z-index:1}
+.basmala{position:relative;text-align:center;font-family:var(--font-arabic);font-size:1.55rem;color:var(--text-main);margin-bottom:1rem;z-index:1}
+.mushaf-text{position:relative;z-index:1;font-family:var(--font-arabic);font-size:var(--reader-font-size);line-height:2.35;text-align:justify;text-align-last:center;color:var(--text-main);direction:rtl;word-spacing:.05em}
+.mushaf-ayah{cursor:pointer;border-radius:8px;padding:2px 4px;transition:background .2s,box-shadow .2s;color:inherit}
+.mushaf-ayah:hover{background:rgba(212,175,55,.08)}
+.mushaf-ayah.active-ayah{background:rgba(212,175,55,.22);box-shadow:0 0 0 2px rgba(212,175,55,.5);color:var(--gold-light)}
+.ayah-marker{font-family:var(--font-arabic);font-size:.62em;color:var(--gold);white-space:nowrap}
+.mushaf-meta{position:absolute;left:2.5rem;right:2.5rem;bottom:1.3rem;display:flex;justify-content:space-between;align-items:center;color:var(--text-muted);font-size:.78rem;z-index:1}
+.mushaf-page-number{font-family:var(--font-arabic);font-size:1.25rem;color:var(--gold)}
+.page-loading{text-align:center;color:var(--gold);padding:1rem}
+.page-error{padding:3rem;text-align:center;color:#ef4444;background:var(--surface);border:1px solid var(--border);border-radius:16px}
+.page-navigation-bottom{display:flex;justify-content:center;align-items:center;gap:1.5rem;margin:1rem 0}
+#page-indicator{color:var(--text-muted)}
+.search-results{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1rem;margin-bottom:2rem}
+.search-results-header{color:var(--gold);font-weight:700;margin-bottom:.75rem}
+.search-result{display:block;width:100%;text-align:right;background:transparent;border:0;border-bottom:1px solid var(--border);padding:1rem;color:var(--text-main);cursor:pointer}
+.search-result:hover{background:var(--surface-hover)}.search-result strong{color:var(--gold);display:block}.search-result span{font-size:.78rem;color:var(--text-muted)}.search-result p{font-family:var(--font-arabic);font-size:1.25rem;margin-top:.4rem}
+.search-empty,.empty-state{padding:1rem;color:var(--text-muted)}
+.bookmarks-list{display:grid;gap:1rem}.bookmark-item{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;color:var(--text-main);cursor:pointer}.bookmark-item:hover{border-color:var(--gold)}
+.floating-player{position:fixed;bottom:1.25rem;right:1.25rem;z-index:1000;display:flex;align-items:center;gap:1.2rem;padding:1rem 1.2rem;border-radius:16px;min-width:320px}
+.player-info{display:flex;flex-direction:column;gap:.2rem;min-width:0}.player-info span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.player-info span:first-child{font-weight:700;color:var(--gold-light)}.audio-status{font-size:.72rem;color:var(--text-muted)}
+.player-controls{display:flex;gap:.4rem;align-items:center;margin-left:auto}.player-controls .icon-btn{width:34px;height:34px;font-size:.85rem}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem}
+.compass-container,.tasbeeh-display{text-align:center;margin-top:1.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.compass-dial{width:120px;height:120px;border:3px solid var(--gold);border-radius:50%;position:relative;background:radial-gradient(circle,var(--surface) 0%,var(--bg-secondary) 100%)}
+.compass-dial:after{content:'▲';position:absolute;top:10px;left:50%;transform:translateX(-50%);color:var(--gold)}
+#tasbeeh-count{font-size:3rem;font-weight:700;color:var(--gold)}
+.setting-item{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid var(--border)}.setting-item select,.setting-item input{accent-color:var(--gold)}
+.app-footer{text-align:center;padding:1.5rem;border-top:1px solid var(--border);font-size:.85rem;color:var(--text-muted);background:var(--bg-secondary)}
+.hidden{display:none!important}
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+@media(max-width:900px){
+    .mushaf-inner{padding:3.5rem 3rem 4rem;min-height:calc(100vh - 340px)}
+    .mushaf-text{font-size:clamp(26px,var(--reader-font-size),32px);line-height:2.25}
 }
-
-body {
-    font-family: var(--font-sans);
-    background-color: var(--bg-primary);
-    color: var(--text-main);
-    min-height: 100vh;
-    overflow-x: hidden;
+@media(max-width:768px){
+    .app-shell{grid-template-columns:1fr}.sidebar{display:none}
+    .top-header{padding:1rem}.search-bar{width:100%}.views-container{padding:1rem}
+    .reader-toolbar{align-items:stretch;flex-direction:column}.reader-controls{flex-direction:column}
+    .reader-controls select,.reader-controls button{width:100%}
+    .mushaf-toolbar{justify-content:space-between}.reader-toolbar-actions{width:100%;flex-wrap:wrap}.reader-toolbar-actions>*{flex:1}
+    .mushaf-inner{padding:3.5rem 1.4rem 4rem;min-height:calc(100vh - 360px);border-width:1px}
+    .mushaf-inner:before{inset:8px}.mushaf-text{font-size:var(--reader-font-size);line-height:2.15;text-align:justify}
+    .mushaf-surah-heading{font-size:1.45rem}.basmala{font-size:1.3rem}
+    .mushaf-meta{left:1.3rem;right:1.3rem;font-size:.68rem}.floating-player{left:.7rem;right:.7rem;bottom:.7rem;min-width:0;padding:.8rem}
+    .player-controls{gap:.2rem}.player-controls .icon-btn{width:31px;height:31px}
 }
-
-/* Loading Screen */
-#loading-screen {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease;
-}
-
-.loader-content {
-    text-align: center;
-}
-
-.gold-seal {
-    font-size: 3rem;
-    color: var(--gold);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.8; }
-}
-
-/* App Shell Layout */
-.app-shell {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: 100vh;
-}
-
-/* Sidebar */
-.sidebar {
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 2rem 1.5rem;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-}
-
-.brand {
-    text-align: center;
-    margin-bottom: 2.5rem;
-}
-
-.brand-icon {
-    font-size: 2.5rem;
-    color: var(--gold);
-}
-
-.brand h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gold-light);
-    margin-top: 0.5rem;
-}
-
-.brand small {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-}
-
-.nav-links {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    flex: 1;
-}
-
-.nav-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    padding: 0.875rem 1rem;
-    border-radius: 12px;
-    text-align: left;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: var(--transition);
-}
-
-.nav-btn:hover, .nav-btn.active {
-    background: var(--surface-hover);
-    color: var(--gold);
-    border-left: 4px solid var(--gold);
-}
-
-.sidebar-footer {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-    border-top: 1px solid var(--border);
-    padding-top: 1rem;
-}
-
-.signature {
-    margin-top: 0.25rem;
-    font-style: italic;
-    color: var(--gold);
-}
-
-/* Main Content */
-.main-content {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow-y: auto;
-}
-
-.top-header {
-    padding: 1.5rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-primary);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.search-bar {
-    display: flex;
-    align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 50px;
-    padding: 0.5rem 1.25rem;
-    width: 400px;
-    gap: 0.75rem;
-}
-
-.search-bar input {
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    font-size: 0.95rem;
-    width: 100%;
-    outline: none;
-}
-
-.header-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.icon-btn {
-    background: var(--surface);
-
-
-
-
-
-
-
-
-
-
-
-
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.icon-btn:hover {
-    background: var(--gold);
-    color: var(--bg-primary);
-}
-
-/* Views */
-.views-container {
-    padding: 2rem;
-    flex: 1;
-}
-
-.view {
-    display: none;
-}
-
-.view.active {
-    display: block;
-    animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Glass Cards */
-.glass-card {
-    background: var(--surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-.hero-card {
-    text-align: center;
-    background: linear-gradient(135deg, rgba(4, 99, 7, 0.2), rgba(212, 175, 55, 0.1));
-    margin-bottom: 2.5rem;
-}
-
-.hero-badge {
-    display: inline-block;
-    background: var(--gold);
-    color: var(--bg-primary);
-    padding: 0.25rem 1rem;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-}
-
-.hero-card h2 {
-    font-family: var(--font-arabic);
-    font-size: 2.5rem;
-    color: var(--gold-light);
-    margin-bottom: 1rem;
-}
-
-/* Surah Grid */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.filter-tabs {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.tab {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: var(--transition);
-}
-
-.tab.active, .tab:hover {
-    background: var(--gold);
-    color: var(--bg-primary);
-}
-
-.surah-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
-
-.surah-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.surah-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--gold);
-    box-shadow: 0 10px 20px rgba(212, 175, 55, 0.1);
-}
-
-.surah-number {
-    width: 40px;
-    height: 40px;
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid var(--gold);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--gold);
-}
-
-.surah-info h4 {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.surah-info p {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.surah-arabic {
-    font-family: var(--font-arabic);
-    font-size: 1.5rem;
-    color: var(--gold-light);
-    text-align: right;
-}
-
-/* Reader View */
-.reader-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.reader-controls {
-    display: flex;
-    gap: 1rem;
-}
-
-.reader-controls select {
-    background: var(--bg-secondary);
-    color: var(--text-main);
-    border: 1px solid var(--border);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    outline: none;
-}
-
-.primary-btn {
-    background: var(--gold);
-    color: var(--bg-primary);
-    border: none;
-    padding: 0.6rem 1.25rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.primary-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-}
-
-.verses-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.verse-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-}
-
-.verse-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    font-size: 0.85rem;
-    color: var(--gold);
-}
-
-.verse-arabic {font-family: var(--font-arabic);
-    font-size: 2rem;
-    text-align: right;
-    line-height: 2.2;
-    margin-bottom: 1rem;
-}
-
-.verse-translation {
-    color: var(--text-muted);
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-/* Tools View */
-.tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.compass-container, .tasbeeh-display {
-    text-align: center;
-    margin-top: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.compass-dial {
-    width: 120px;
-    height: 120px;
-    border: 3px solid var(--gold);
-    border-radius: 50%;
-    position: relative;
-    background: radial-gradient(circle, var(--surface) 0%, var(--bg-secondary) 100%);
-}
-
-.compass-dial::after {
-    content: '▲';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: var(--gold);
-}
-
-#tasbeeh-count {
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--gold);
-}
-
-/* Footer */
-.app-footer {
-    text-align: center;
-    padding: 1.5rem;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    background: var(--bg-secondary);
-}
-
-/* Utilities */
-.hidden { display: none !important; }
-
-@media (max-width: 768px) {
-    .app-shell { grid-template-columns: 1fr; }
-    .sidebar { display: none; }
-    .search-bar { width: 100%; }
+@media(max-width:480px){
+    .section-header{align-items:flex-start;flex-direction:column;gap:1rem}
+    .filter-tabs{width:100%;overflow:auto}.tab{white-space:nowrap}
+    .mushaf-toolbar>button{padding:.55rem .7rem}.page-jump{order:3;width:100%;justify-content:center}
+    .mushaf-text{font-size:var(--reader-font-size);line-height:2.05}
 }
