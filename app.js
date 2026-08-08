@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
         pageCache: new Map(),
         reciter: localStorage.getItem('noorReciter') || 'ar.alafasy',
         tasbeehCount: Number(localStorage.getItem('noorTasbeehCount')) || 0,
+        tasbeehDhikr: localStorage.getItem('noorTasbeehDhikr') || 'سبحان الله',
+        tasbeehTarget: Number(localStorage.getItem('noorTasbeehTarget')) || 33,
         currentAyahIndex: -1,
         currentAyah: null,
         audioMode: 'ayah',
@@ -42,6 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasbeehBtn = $('tasbeeh-btn');
     const tasbeehCountEl = $('tasbeeh-count');
     const tasbeehReset = $('tasbeeh-reset');
+    const tasbeehDhikr = $('tasbeeh-dhikr');
+    const tasbeehDhikrName = $('tasbeeh-dhikr-name');
+    const tasbeehTarget = $('tasbeeh-target');
+    const tasbeehCustomTarget = $('tasbeeh-custom-target');
+    const tasbeehProgress = $('tasbeeh-progress');
+    const mobileMenuToggle = $('mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
     const container = $('verses-container');
     const audio = $('audio-element');
 
@@ -608,8 +617,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             showView(btn.dataset.view);
             if (btn.dataset.view === 'bookmarks') renderBookmarks();
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
         });
     });
+
+    // Mobile navigation drawer.
+    if (mobileMenuToggle && sidebar) {
+        mobileMenuToggle.addEventListener('click', () => {
+            const open = sidebar.classList.toggle('mobile-open');
+            mobileMenuToggle.setAttribute('aria-expanded', String(open));
+        });
+
+        document.addEventListener('click', e => {
+            if (window.innerWidth > 768 || !sidebar.classList.contains('mobile-open')) return;
+            if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                sidebar.classList.remove('mobile-open');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
 
     $('prev-page').addEventListener('click', () => renderReaderPage(state.currentPage - 1));
     $('next-page').addEventListener('click', () => renderReaderPage(state.currentPage + 1));
@@ -739,18 +766,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Tasbeeh.
-    tasbeehCountEl.textContent = state.tasbeehCount;
-    tasbeehBtn.addEventListener('click', () => {
-        state.tasbeehCount++;
+    // Digital Tasbeeh. Each Dhikr keeps its own count.
+    const tasbeehKey = dhikr => `noorTasbeehCount_${encodeURIComponent(dhikr)}`;
+    const getDhikrCount = dhikr => Number(localStorage.getItem(tasbeehKey(dhikr))) || 0;
+
+    function getTasbeehTarget() {
+        if (tasbeehTarget.value === '0') {
+            const custom = Number(tasbeehCustomTarget.value);
+            return Number.isFinite(custom) && custom > 0 ? Math.floor(custom) : 0;
+        }
+        return Number(tasbeehTarget.value) || 33;
+    }
+
+    function updateTasbeehUI() {
+        const dhikr = tasbeehDhikr.value;
+        state.tasbeehDhikr = dhikr;
+        state.tasbeehCount = getDhikrCount(dhikr);
+        state.tasbeehTarget = getTasbeehTarget() || state.tasbeehTarget || 33;
+        tasbeehDhikrName.textContent = dhikr;
         tasbeehCountEl.textContent = state.tasbeehCount;
+
+        const target = state.tasbeehTarget;
+        const progress = target > 0 ? Math.min(100, (state.tasbeehCount / target) * 100) : 0;
+        if (tasbeehProgress) tasbeehProgress.querySelector('span').style.width = `${progress}%`;
+        localStorage.setItem('noorTasbeehDhikr', dhikr);
+        localStorage.setItem('noorTasbeehTarget', state.tasbeehTarget);
+    }
+
+    tasbeehDhikr.value = state.tasbeehDhikr;
+    tasbeehTarget.value = [33, 100, 1000].includes(state.tasbeehTarget) ? String(state.tasbeehTarget) : '0';
+    if (tasbeehTarget.value === '0') {
+        tasbeehCustomTarget.classList.remove('hidden');
+        tasbeehCustomTarget.value = state.tasbeehTarget > 0 ? state.tasbeehTarget : '';
+    }
+    updateTasbeehUI();
+
+    tasbeehDhikr.addEventListener('change', updateTasbeehUI);
+
+    tasbeehTarget.addEventListener('change', () => {
+        const custom = tasbeehTarget.value === '0';
+        tasbeehCustomTarget.classList.toggle('hidden', !custom);
+        if (!custom) updateTasbeehUI();
+        else {
+            tasbeehCustomTarget.focus();
+            state.tasbeehTarget = 0;
+            localStorage.setItem('noorTasbeehTarget', 0);
+            updateTasbeehUI();
+        }
+    });
+
+    tasbeehCustomTarget.addEventListener('input', () => {
+        const target = Number(tasbeehCustomTarget.value);
+        if (Number.isFinite(target) && target > 0) {
+            state.tasbeehTarget = Math.floor(target);
+            localStorage.setItem('noorTasbeehTarget', state.tasbeehTarget);
+            updateTasbeehUI();
+        }
+    });
+
+    tasbeehBtn.addEventListener('click', () => {
+        state.tasbeehCount = getDhikrCount(state.tasbeehDhikr) + 1;
+        localStorage.setItem(tasbeehKey(state.tasbeehDhikr), state.tasbeehCount);
         localStorage.setItem('noorTasbeehCount', state.tasbeehCount);
+        tasbeehCountEl.textContent = state.tasbeehCount;
+        updateTasbeehUI();
+
+        if (navigator.vibrate) navigator.vibrate(18);
+
+        const target = getTasbeehTarget();
+        if (target > 0 && state.tasbeehCount >= target) {
+            tasbeehDhikrName.classList.add('tasbeeh-complete');
+            setTimeout(() => tasbeehDhikrName.classList.remove('tasbeeh-complete'), 700);
+        }
     });
 
     tasbeehReset.addEventListener('click', () => {
         state.tasbeehCount = 0;
-        tasbeehCountEl.textContent = state.tasbeehCount;
+        localStorage.setItem(tasbeehKey(state.tasbeehDhikr), 0);
         localStorage.setItem('noorTasbeehCount', 0);
+        updateTasbeehUI();
     });
 
     // Initial state.

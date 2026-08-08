@@ -11,7 +11,7 @@
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noor Al-Quran </title>
+    <title>Noor Al-Quran — The Supreme Digital Quran Experience</title>
     <meta name="description" content="An exquisite, production-ready Holy Quran web application designed by Eng. Yahya Nabil.">
     <meta name="author" content="Eng. Yahya Nabil">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,6 +50,7 @@
 
         <main class="main-content">
             <header class="top-header">
+                <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
                 <div class="search-bar">
                     <span class="search-icon">🔍</span>
                     <input type="text" id="global-search" placeholder="Search Surah, Verse, or Keyword..." aria-label="Search Quran">
@@ -147,7 +148,30 @@
                         <div class="tool-card glass-card">
                             <h3>📿 Digital Tasbeeh</h3>
                             <div class="tasbeeh-display">
+                                <label class="tasbeeh-label" for="tasbeeh-dhikr">Choose Dhikr</label>
+                                <select id="tasbeeh-dhikr" class="tasbeeh-select" aria-label="Choose Dhikr">
+                                    <option value="سبحان الله">سبحان الله</option>
+                                    <option value="الحمد لله">الحمد لله</option>
+                                    <option value="الله أكبر">الله أكبر</option>
+                                    <option value="لا إله إلا الله">لا إله إلا الله</option>
+                                    <option value="أستغفر الله">أستغفر الله</option>
+                                    <option value="اللهم صل وسلم على نبينا محمد ﷺ">اللهم صل وسلم على نبينا محمد ﷺ</option>
+                                    <option value="لا حول ولا قوة إلا بالله">لا حول ولا قوة إلا بالله</option>
+                                    <option value="حسبي الله ونعم الوكيل">حسبي الله ونعم الوكيل</option>
+                                </select>
+                                <div id="tasbeeh-dhikr-name" class="tasbeeh-dhikr-name">سبحان الله</div>
                                 <span id="tasbeeh-count">0</span>
+                                <div class="tasbeeh-target-row">
+                                    <label for="tasbeeh-target">Target</label>
+                                    <select id="tasbeeh-target" class="tasbeeh-target" aria-label="Tasbeeh target">
+                                        <option value="33">33</option>
+                                        <option value="100">100</option>
+                                        <option value="1000">1000</option>
+                                        <option value="0">Custom</option>
+                                    </select>
+                                    <input id="tasbeeh-custom-target" class="tasbeeh-custom-target hidden" type="number" min="1" max="999999" placeholder="Target">
+                                </div>
+                                <div id="tasbeeh-progress" class="tasbeeh-progress" aria-hidden="true"><span></span></div>
                                 <button id="tasbeeh-btn" class="primary-btn">Count</button>
                                 <button id="tasbeeh-reset" class="secondary-btn">Reset</button>
                             </div>
