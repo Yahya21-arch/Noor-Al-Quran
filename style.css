@@ -206,3 +206,7 @@ button,input,select{font:inherit}
 .mushaf-surah-section.isolated-page{display:block;min-height:100%;}
 .mushaf-surah-section.isolated-page .mushaf-ayah-flow{display:inline}
 @media(max-width:480px){.page-navigation-bottom{gap:.45rem;justify-content:space-between}.index-btn{padding:.55rem .8rem;font-size:.82rem}.page-navigation-bottom .secondary-btn{min-width:42px}}
+
+/* Noor Al-Quran Privacy Policy */
+.privacy-policy-link{display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;padding:10px 12px;border-radius:10px;transition:.2s ease}
+.privacy-policy-link:hover{background:rgba(255,255,255,.07);transform:translateX(-2px)}
