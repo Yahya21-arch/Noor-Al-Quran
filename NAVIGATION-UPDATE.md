@@ -1,0 +1,1 @@
+Updated mobile bottom navigation: the five items are Home/Surahs, Reader, Tasbeeh, Bookmarks, and Settings. The bottom navigation attempts to reuse the existing site's navigation handlers so the buttons actually switch views. The bar uses the site's dark/gold visual language.

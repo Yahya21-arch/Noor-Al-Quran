@@ -11,7 +11,7 @@
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noor Al-Quran </title>
+    <title>Noor Al-Quran — The Supreme Digital Quran Experience</title>
     <meta name="description" content="An exquisite, production-ready Holy Quran web application designed by Eng. Yahya Nabil.">
     <meta name="author" content="Eng. Yahya Nabil">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,8 +94,15 @@
                         <div class="reader-controls">
                             <select id="reciter-select" aria-label="Select Reciter">
                                 <option value="ar.alafasy">Mishary Rashid Alafasy</option>
-                                <option value="ar.abdulbasit">Abdul Basit</option>
+                                <option value="ar.abdulbasit">Abdul Basit Abdul Samad</option>
                                 <option value="ar.sudais">Abdurrahman As-Sudais</option>
+                                <option value="ar.husary">Mahmoud Khalil Al-Husary</option>
+                                <option value="ar.minshawi">Mohamed Siddiq Al-Minshawi</option>
+                                <option value="ar.shuraim">Saud Al-Shuraim</option>
+                                <option value="ar.ajamy">Ahmed ibn Ali Al-Ajamy</option>
+                                <option value="ar.muhammadayoub">Muhammad Ayyoub</option>
+                                <option value="ar.hudhaify">Ali Al-Hudhaify</option>
+                                <option value="ar.muhammadjibreel">Muhammad Jibreel</option>
                             </select>
                             <button id="play-surah-audio" class="primary-btn">▶ Play Audio</button>
                         </div>
@@ -234,5 +241,30 @@
     </footer>
 
     <script src="app.js"></script>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="bottom-nav" aria-label="Main Navigation">
+            <button class="bottom-nav-btn active" data-view="home" type="button">
+                <span class="bottom-nav-icon">⌂</span>
+                <span>السور</span>
+            </button>
+            <button class="bottom-nav-btn" data-view="reader" type="button">
+                <span class="bottom-nav-icon">▤</span>
+                <span>القارئ</span>
+            </button>
+            <button class="bottom-nav-btn" data-view="tools" type="button">
+                <span class="bottom-nav-icon">◉</span>
+                <span>السبحة</span>
+            </button></button>
+            <button class="bottom-nav-btn" data-view="bookmarks" type="button">
+                <span class="bottom-nav-icon">♡</span>
+                <span>المفضلة</span>
+            </button>
+            <button class="bottom-nav-btn" data-view="settings" type="button">
+                <span class="bottom-nav-icon">⚙</span>
+                <span>الإعدادات</span>
+            </button>
+        </nav>
+
 </body>
 </html>

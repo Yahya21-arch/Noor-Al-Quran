@@ -1,0 +1,1 @@
+Added working Al Quran Cloud reciters with their documented audio bitrates and persistent selection. The mobile bottom navigation now labels Tools as Tasbeeh and uses a tasbeeh icon. The navigation bar uses the site's dark/glass/gold visual language.
