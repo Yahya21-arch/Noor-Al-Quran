@@ -349,3 +349,279 @@ button,input,select{font:inherit}
   }
   .bottom-nav-btn.active .bottom-nav-icon{color:#e7bd58 !important}
 }
+
+
+/* =========================================================
+   Noor Al-Quran — Light Mode & Mobile Bottom Navigation
+   Update: improve Arabic Surah-name contrast and animate
+   bottom navigation selection.
+   ========================================================= */
+
+/* Light mode: make Arabic Surah names clearly readable. */
+[data-theme="light"] .surah-arabic {
+    color: #6b5200 !important;
+    text-shadow: none;
+}
+
+[data-theme="light"] .surah-info h4 {
+    color: #172033 !important;
+}
+
+[data-theme="light"] .surah-info p {
+    color: #526174 !important;
+}
+
+[data-theme="light"] .surah-card {
+    background: rgba(255,255,255,.94) !important;
+    border-color: rgba(120,95,20,.22) !important;
+    box-shadow: 0 6px 18px rgba(15,23,42,.06);
+}
+
+[data-theme="light"] .surah-number {
+    background: rgba(212,175,55,.10);
+    color: #7a5c00;
+}
+
+/* Smoothly transition the main theme surfaces. */
+body,
+.app-shell,
+.sidebar,
+.main-content,
+.top-header,
+.surah-card,
+.bottom-nav,
+.bottom-nav-btn,
+.tab,
+.search-bar {
+    transition:
+        background-color .28s ease,
+        background .28s ease,
+        color .28s ease,
+        border-color .28s ease,
+        box-shadow .28s ease;
+}
+
+/* Light-mode mobile bottom navigation. */
+@media (max-width:768px) {
+    [data-theme="light"] .bottom-nav {
+        background: rgba(255,255,255,.96) !important;
+        border: 1px solid rgba(122,92,0,.20) !important;
+        box-shadow:
+            0 12px 30px rgba(15,23,42,.14),
+            inset 0 1px 0 rgba(255,255,255,.95) !important;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    [data-theme="light"] .bottom-nav-btn {
+        color: #667085 !important;
+        background: transparent !important;
+    }
+
+    [data-theme="light"] .bottom-nav-btn.active {
+        color: #795b00 !important;
+        background: rgba(212,175,55,.13) !important;
+    }
+
+    [data-theme="light"] .bottom-nav-btn.active .bottom-nav-icon {
+        color: #9a7400 !important;
+    }
+
+    [data-theme="light"] .bottom-nav-icon {
+        color: #667085 !important;
+    }
+
+    /* Active icon motion: lift + slight scale/rotation when selection changes. */
+    .bottom-nav-btn.active .bottom-nav-icon {
+        animation: noorBottomIconActive .38s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .bottom-nav-btn.active span:last-child {
+        animation: noorBottomLabelActive .28s ease both;
+    }
+}
+
+/* A subtle "selected item" motion that remains calm and app-like. */
+@keyframes noorBottomIconActive {
+    0% {
+        transform: translateY(5px) scale(.88) rotate(-4deg);
+        opacity: .55;
+    }
+    55% {
+        transform: translateY(-3px) scale(1.13) rotate(2deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-1px) scale(1.06) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes noorBottomLabelActive {
+    0% {
+        opacity: .55;
+        transform: translateY(3px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Respect reduced-motion accessibility preferences. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* =========================================================
+   Noor Al-Quran — Light Mode Visibility + Bottom Nav Motion
+   Stronger contrast for headings/cards while preserving Quran
+   verse styling separately.
+   ========================================================= */
+[data-theme="light"] .hero-card h2,
+[data-theme="light"] .section-header h3,
+[data-theme="light"] .reader-toolbar h2,
+[data-theme="light"] .section-header,
+[data-theme="light"] .brand h1,
+[data-theme="light"] .settings-section h3,
+[data-theme="light"] .tools-section h3,
+[data-theme="light"] .bookmarks-section h3,
+[data-theme="light"] .surah-info h4,
+[data-theme="light"] .surah-arabic {
+    color:#6b5200 !important;
+    text-shadow:none !important;
+}
+
+/* The daily Quran quote: clear and readable in light mode. */
+[data-theme="light"] #daily-verse-arabic {
+    color:#6b5200 !important;
+    opacity:1 !important;
+    text-shadow:none !important;
+}
+[data-theme="light"] #daily-verse-translation {
+    color:#334155 !important;
+    opacity:1 !important;
+}
+
+/* Adhkar: make every non-ayah label and the actual dhikr text readable. */
+[data-theme="light"] .adhkar-page,
+[data-theme="light"] .adhkar-page * {
+    text-shadow:none;
+}
+[data-theme="light"] .adhkar-header,
+[data-theme="light"] .adhkar-category-card,
+[data-theme="light"] .adhkar-card,
+[data-theme="light"] .adhkar-surah {
+    background:rgba(255,255,255,.96) !important;
+    border-color:rgba(107,82,0,.20) !important;
+    color:#1e293b !important;
+    box-shadow:0 8px 24px rgba(15,23,42,.08) !important;
+}
+[data-theme="light"] .adhkar-eyebrow,
+[data-theme="light"] .adhkar-header h2,
+[data-theme="light"] .adhkar-category-card strong,
+[data-theme="light"] .adhkar-progress-text span:first-child,
+[data-theme="light"] .adhkar-card-head span:first-child,
+[data-theme="light"] .adhkar-surah h3 {
+    color:#6b5200 !important;
+    opacity:1 !important;
+}
+[data-theme="light"] .adhkar-header p,
+[data-theme="light"] .adhkar-category-card small,
+[data-theme="light"] .adhkar-progress-text span:last-child,
+[data-theme="light"] .adhkar-note,
+[data-theme="light"] .adhkar-card-head span:last-child {
+    color:#475569 !important;
+    opacity:1 !important;
+}
+[data-theme="light"] .adhkar-text,
+[data-theme="light"] .adhkar-surah-text {
+    color:#1e293b !important;
+    background:rgba(248,250,252,.96) !important;
+}
+[data-theme="light"] .adhkar-category-icon,
+[data-theme="light"] .adhkar-header-icon {
+    color:#8a6800 !important;
+    background:rgba(212,175,55,.12) !important;
+    border-color:rgba(107,82,0,.22) !important;
+}
+
+/* Keep Quran ayah text independently styled; these rules intentionally do
+   not recolor .mushaf-ayah / .mushaf-basmala-ayah / reader verse text. */
+
+/* Reliable click-triggered navigation animation. JS adds .nav-animate
+   for each selection so the animation restarts on every tap. */
+@media (max-width:768px) {
+    .bottom-nav-btn.nav-animate {
+        animation:noorNavButtonPop .46s cubic-bezier(.2,.85,.25,1) both;
+    }
+    .bottom-nav-btn.nav-animate .bottom-nav-icon {
+        animation:noorNavIconPop .46s cubic-bezier(.2,.85,.25,1) both !important;
+    }
+    .bottom-nav-btn.nav-animate > span:last-child {
+        animation:noorNavLabelPop .32s ease both !important;
+    }
+}
+@keyframes noorNavButtonPop {
+    0% { transform:translateY(0) scale(1); }
+    45% { transform:translateY(-5px) scale(1.04); }
+    100% { transform:translateY(0) scale(1); }
+}
+@keyframes noorNavIconPop {
+    0% { transform:translateY(5px) scale(.82) rotate(-8deg); opacity:.55; }
+    55% { transform:translateY(-4px) scale(1.22) rotate(4deg); opacity:1; }
+    100% { transform:translateY(-1px) scale(1.08) rotate(0); opacity:1; }
+}
+@keyframes noorNavLabelPop {
+    0% { transform:translateY(4px); opacity:.5; }
+    100% { transform:translateY(0); opacity:1; }
+}
+
+@media (max-width:768px){
+  .bottom-nav-btn{will-change:transform;}
+  .bottom-nav-icon{will-change:transform;}
+}
+
+/* Final light-mode typography for Tasbeeh */
+[data-theme="light"] .tasbeeh-dhikr-name {
+    color: #6b5200 !important;
+    text-shadow: none !important;
+}
+
+/* Final bottom-navigation tap animation.
+   JS toggles .nav-animate on every click, including repeated clicks. */
+@media (max-width:768px) {
+    .bottom-nav-btn.nav-animate .bottom-nav-icon {
+        animation: noorBottomNavTap .52s cubic-bezier(.2,.85,.25,1) both !important;
+        will-change: transform, opacity;
+    }
+    .bottom-nav-btn.nav-animate {
+        animation: noorBottomNavButtonTap .52s ease both;
+    }
+}
+
+@keyframes noorBottomNavTap {
+    0%   { transform: translateY(5px) scale(.82) rotate(-5deg); opacity:.45; }
+    45%  { transform: translateY(-6px) scale(1.18) rotate(3deg); opacity:1; }
+    70%  { transform: translateY(1px) scale(1.08) rotate(-1deg); }
+    100% { transform: translateY(-1px) scale(1.06) rotate(0deg); opacity:1; }
+}
+@keyframes noorBottomNavButtonTap {
+    0% { transform: scale(.97); }
+    55% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bottom-nav-btn.nav-animate,
+    .bottom-nav-btn.nav-animate .bottom-nav-icon {
+        animation: none !important;
+    }
+}

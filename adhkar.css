@@ -239,3 +239,34 @@
     .adhkar-text{min-height:260px;padding:1rem;font-size:1.35rem;}
     .adhkar-reader-top{align-items:flex-start;}
 }
+
+
+/* Light mode overrides for the Adhkar module. */
+[data-theme="light"] .adhkar-header,
+[data-theme="light"] .adhkar-category-card,
+[data-theme="light"] .adhkar-card,
+[data-theme="light"] .adhkar-surah{
+    background:rgba(255,255,255,.96) !important;
+    color:#1e293b !important;
+    border-color:rgba(107,82,0,.20) !important;
+}
+[data-theme="light"] .adhkar-header h2,
+[data-theme="light"] .adhkar-category-card strong,
+[data-theme="light"] .adhkar-progress-text span:first-child,
+[data-theme="light"] .adhkar-card-head span:first-child,
+[data-theme="light"] .adhkar-surah h3,
+[data-theme="light"] .adhkar-eyebrow{
+    color:#6b5200 !important;
+}
+[data-theme="light"] .adhkar-header p,
+[data-theme="light"] .adhkar-category-card small,
+[data-theme="light"] .adhkar-progress-text span:last-child,
+[data-theme="light"] .adhkar-note,
+[data-theme="light"] .adhkar-card-head span:last-child{
+    color:#475569 !important;
+}
+[data-theme="light"] .adhkar-text,
+[data-theme="light"] .adhkar-surah-text{
+    color:#1e293b !important;
+    background:#f8fafc !important;
+}
