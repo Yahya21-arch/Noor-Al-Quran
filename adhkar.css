@@ -1,0 +1,241 @@
+
+/* Noor Al-Quran — Adhkar */
+.adhkar-page{
+    width:min(100%, 980px);
+    margin:0 auto;
+    padding:clamp(.5rem,2vw,1rem) 0 2rem;
+}
+.adhkar-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    margin-bottom:1.4rem;
+    padding:1.15rem 1.25rem;
+    border:1px solid rgba(212,177,87,.20);
+    border-radius:22px;
+    background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(212,177,87,.045));
+    box-shadow:0 14px 34px rgba(0,0,0,.16);
+}
+.adhkar-eyebrow{
+    display:block;
+    color:var(--gold-light,#e8c96b);
+    font-size:.78rem;
+    margin-bottom:.25rem;
+}
+.adhkar-header h2{
+    margin:0;
+    color:#f7f0df;
+    font-family:'Amiri',serif;
+    font-size:2rem;
+}
+.adhkar-header p{
+    margin:.25rem 0 0;
+    color:rgba(244,240,228,.68);
+    font-size:.9rem;
+}
+.adhkar-header-icon{
+    width:54px;
+    height:54px;
+    display:grid;
+    place-items:center;
+    border-radius:18px;
+    color:#e7bd58;
+    border:1px solid rgba(224,181,75,.22);
+    background:rgba(224,181,75,.08);
+    font-size:1.7rem;
+}
+.adhkar-categories{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:1rem;
+}
+.adhkar-category-card{
+    min-height:170px;
+    padding:1.25rem;
+    border:1px solid rgba(212,177,87,.18);
+    border-radius:24px;
+    background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+    color:#f4f0e4;
+    text-align:right;
+    font-family:inherit;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:.55rem;
+    transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+.adhkar-category-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(224,181,75,.45);
+    background:rgba(224,181,75,.07);
+}
+.adhkar-category-icon{
+    width:48px;
+    height:48px;
+    display:grid;
+    place-items:center;
+    border-radius:16px;
+    color:#e7bd58;
+    background:rgba(224,181,75,.09);
+    border:1px solid rgba(224,181,75,.18);
+    font-size:1.45rem;
+}
+.adhkar-category-card strong{
+    font-family:'Amiri',serif;
+    font-size:1.45rem;
+}
+.adhkar-category-card small{
+    color:rgba(244,240,228,.62);
+    font-size:.82rem;
+}
+.adhkar-reader-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    margin-bottom:1rem;
+}
+.adhkar-progress-text{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:.2rem;
+}
+.adhkar-progress-text span:first-child{
+    color:#f3ead5;
+    font-family:'Amiri',serif;
+    font-size:1.35rem;
+}
+.adhkar-progress-text span:last-child{
+    color:rgba(244,240,228,.58);
+    font-size:.78rem;
+}
+.adhkar-card{
+    padding:clamp(1.1rem,3vw,2rem);
+    border:1px solid rgba(212,177,87,.20);
+    border-radius:26px;
+    background:linear-gradient(145deg,rgba(20,25,22,.94),rgba(35,37,30,.82));
+    box-shadow:0 20px 48px rgba(0,0,0,.25);
+}
+.adhkar-card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    margin-bottom:1.2rem;
+}
+.adhkar-card-head span:first-child{
+    color:#e7bd58;
+    font-size:.85rem;
+}
+.adhkar-card-head span:last-child{
+    color:rgba(244,240,228,.62);
+    font-size:.82rem;
+    padding:.35rem .65rem;
+    border-radius:999px;
+    border:1px solid rgba(212,177,87,.16);
+    background:rgba(212,177,87,.05);
+}
+.adhkar-text{
+    min-height:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:1.4rem;
+    border-radius:20px;
+    background:rgba(255,255,255,.025);
+    color:#f7f0df;
+    font-family:'Amiri',serif;
+    font-size:clamp(1.35rem,3vw,2rem);
+    line-height:2.15;
+    text-align:center;
+    white-space:pre-line;
+}
+.adhkar-counter{
+    display:flex;
+    justify-content:center;
+    align-items:baseline;
+    gap:.35rem;
+    margin:1.2rem 0 .8rem;
+    color:#e7bd58;
+    font-size:1rem;
+}
+.adhkar-counter #adhkar-count{
+    font-size:2.1rem;
+    font-weight:700;
+}
+.adhkar-progress{
+    height:7px;
+    overflow:hidden;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    margin-bottom:1rem;
+}
+.adhkar-progress span{
+    display:block;
+    height:100%;
+    width:0;
+    border-radius:inherit;
+    background:linear-gradient(90deg,#b48b38,#e7bd58);
+    transition:width .2s ease;
+}
+.adhkar-count-btn,.adhkar-next-btn{
+    width:100%;
+    min-height:52px;
+    font-size:1rem;
+}
+.adhkar-count-btn:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+}
+.adhkar-next-btn{
+    margin-top:.65rem;
+}
+.adhkar-note{
+    margin:1rem 0 0;
+    color:rgba(244,240,228,.55);
+    text-align:center;
+    font-size:.78rem;
+}
+
+/* Quranic surahs inside the adhkar reader */
+.adhkar-text.adhkar-quran-text{
+    display:block;
+    min-height:0;
+    padding:1rem;
+    text-align:right;
+    overflow:hidden;
+}
+.adhkar-surah{
+    padding:1.05rem 1rem;
+    border:1px solid rgba(212,177,87,.16);
+    border-radius:18px;
+    background:rgba(212,177,87,.035);
+}
+.adhkar-surah + .adhkar-surah{margin-top:.8rem;}
+.adhkar-surah h3{
+    margin:0 0 .7rem;
+    color:#e7bd58;
+    font-family:'Amiri',serif;
+    font-size:1.2rem;
+    text-align:center;
+}
+.adhkar-surah-text{
+    color:#f7f0df;
+    font-family:'Amiri',serif;
+    font-size:clamp(1.2rem,2.6vw,1.65rem);
+    line-height:2.15;
+    text-align:center;
+}
+
+@media(max-width:600px){
+    .adhkar-categories{grid-template-columns:1fr;}
+    .adhkar-category-card{min-height:135px;}
+    .adhkar-header{border-radius:18px;}
+    .adhkar-card{border-radius:20px;}
+    .adhkar-text{min-height:260px;padding:1rem;font-size:1.35rem;}
+    .adhkar-reader-top{align-items:flex-start;}
+}

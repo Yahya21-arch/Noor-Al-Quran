@@ -228,7 +228,7 @@ button,input,select{font:inherit}
         bottom:max(8px, env(safe-area-inset-bottom));
         z-index:3000;
         display:grid;
-        grid-template-columns:repeat(5,1fr);
+        grid-template-columns:repeat(6,1fr);
         align-items:stretch;
         padding:7px 5px max(7px, env(safe-area-inset-bottom));
         background:rgba(8,73,49,.96);
@@ -253,7 +253,7 @@ button,input,select{font:inherit}
         padding:5px 2px;
         border-radius:15px;
         font-family:inherit;
-        font-size:.67rem;
+        font-size:.62rem;
         font-weight:500;
         line-height:1.25;
         cursor:pointer;
@@ -305,7 +305,7 @@ button,input,select{font:inherit}
         border-radius:19px;
     }
     .bottom-nav-btn{
-        font-size:.61rem;
+        font-size:.56rem;
     }
     .bottom-nav-icon{
         width:28px;
