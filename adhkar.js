@@ -366,7 +366,33 @@
         } catch (_) {}
     }
 
-    function showCategories() {
+    
+    function scrollAdhkarToTop(smooth = true) {
+        const behavior = smooth ? 'smooth' : 'auto';
+        const els = [
+            document.scrollingElement, document.documentElement, document.body,
+            document.querySelector('.main-content'),
+            document.querySelector('.content'),
+            document.querySelector('.app-content'),
+            document.querySelector('.view-container'),
+            document.querySelector('.adhkar-reader'),
+            document.querySelector('#adhkar-reader'),
+            document.querySelector('.adhkar-container')
+        ].filter(Boolean);
+        const seen = new Set();
+        els.forEach(el => {
+            if (seen.has(el)) return;
+            seen.add(el);
+            try {
+                if (el === document.scrollingElement || el === document.documentElement || el === document.body)
+                    window.scrollTo({top:0, behavior});
+                else if (el.scrollTo) el.scrollTo({top:0, behavior});
+                el.scrollTop = 0;
+            } catch (_) {}
+        });
+    }
+
+function showCategories() {
         categories.classList.remove('hidden');
         reader.classList.add('hidden');
         state.category = null;
@@ -411,12 +437,9 @@
         countBtn.classList.remove('hidden');
         nextBtn.classList.add('hidden');
         countBtn.textContent = item.count === 1 ? 'تمت قراءة الذكر' : 'تكرار الذكر';
+        requestAnimationFrame(() => requestAnimationFrame(() => scrollAdhkarToTop(true)));
 
-        // When moving to a new dhikr, always show its beginning.
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
+}
 
     function openCategory(key) {
         if (!DATA[key]) return;
@@ -424,7 +447,6 @@
         state.itemIndex = 0;
         categories.classList.add('hidden');
         reader.classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         renderItem();
     }
 
