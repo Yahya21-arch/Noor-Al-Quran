@@ -411,6 +411,11 @@
         countBtn.classList.remove('hidden');
         nextBtn.classList.add('hidden');
         countBtn.textContent = item.count === 1 ? 'تمت قراءة الذكر' : 'تكرار الذكر';
+
+        // When moving to a new dhikr, always show its beginning.
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     }
 
     function openCategory(key) {
@@ -419,6 +424,7 @@
         state.itemIndex = 0;
         categories.classList.add('hidden');
         reader.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         renderItem();
     }
 
