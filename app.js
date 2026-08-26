@@ -235,6 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
         navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
         views.forEach(v => v.classList.toggle('active', v.id === `view-${name}`));
         state.currentView = name;
+
+        // Immersive Mushaf mode: when the reader is opened, the Quran page
+        // takes over the whole screen. Reader controls stay hidden until the
+        // user taps the screen, then they appear as an overlay.
+        document.body.classList.toggle('immersive-reader-active', name === 'reader');
+        if (name !== 'reader') {
+            document.body.classList.remove('reader-controls-visible');
+        }
     }
 
     function setLoading(visible, text = 'Loading Mushaf page…') {
@@ -940,6 +948,18 @@ $('page-input').value = page;
         const number = Number(ayahEl.dataset.ayah);
         const ayah = getPageAyahs().find(a => Number(a.number) === number);
         if (ayah) playAyah(ayah, {mode: 'ayah'});
+    });
+
+    // Immersive reader: a tap anywhere on the Quran page toggles the reader
+    // controls. Tapping an actual control does not close the overlay.
+    container.addEventListener('click', e => {
+        if (state.currentView !== 'reader') return;
+        if (e.target.closest('button, select, input, .reader-toolbar, .mushaf-toolbar, .page-navigation-bottom')) return;
+        document.body.classList.toggle('reader-controls-visible');
+    });
+
+    document.querySelectorAll('.reader-toolbar, .mushaf-toolbar, .page-navigation-bottom').forEach(el => {
+        el.addEventListener('click', e => e.stopPropagation());
     });
 
     // Keyboard page navigation follows the RTL reader gesture: Right = next, Left = previous.

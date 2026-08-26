@@ -625,3 +625,300 @@ body,
         animation: none !important;
     }
 }
+
+
+/* =========================================================
+   IMMERSIVE MUSHAF READER
+   Quran-only screen: all application chrome is hidden while
+   reading and appears only after a tap/click.
+   ========================================================= */
+body.immersive-reader-active {
+    overflow: hidden;
+    background: #000;
+}
+
+body.immersive-reader-active .app-shell {
+    display: block;
+    min-height: 100dvh;
+}
+
+body.immersive-reader-active .sidebar,
+body.immersive-reader-active .top-header,
+body.immersive-reader-active .bottom-nav,
+body.immersive-reader-active .app-footer,
+body.immersive-reader-active .floating-player {
+    display: none !important;
+}
+
+body.immersive-reader-active .main-content {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    padding: 0;
+}
+
+body.immersive-reader-active .views-container {
+    padding: 0;
+    height: 100dvh;
+    min-height: 100dvh;
+}
+
+body.immersive-reader-active #view-reader {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+    animation: none;
+}
+
+/* Controls are real existing controls, but become an overlay in reader mode. */
+body.immersive-reader-active #view-reader > .reader-toolbar,
+body.immersive-reader-active #view-reader > .mushaf-toolbar,
+body.immersive-reader-active #view-reader > .page-navigation-bottom {
+    position: fixed;
+    left: 50%;
+    width: min(94vw, 900px);
+    margin: 0;
+    z-index: 5000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, -12px);
+    transition: opacity .22s ease, transform .22s ease, visibility .22s ease;
+}
+
+body.immersive-reader-active #view-reader > .reader-toolbar {
+    top: max(10px, env(safe-area-inset-top));
+    justify-content: space-between;
+    padding: .65rem .8rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    background: rgba(8,8,8,.84);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+body.immersive-reader-active #view-reader > .mushaf-toolbar {
+    top: calc(max(10px, env(safe-area-inset-top)) + 64px);
+    padding: .6rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    background: rgba(8,8,8,.84);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+body.immersive-reader-active #view-reader > .page-navigation-bottom {
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: min(94vw, 520px);
+    padding: .5rem .65rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    background: rgba(8,8,8,.84);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    transform: translate(-50%, 12px);
+}
+
+body.immersive-reader-active.reader-controls-visible #view-reader > .reader-toolbar,
+body.immersive-reader-active.reader-controls-visible #view-reader > .mushaf-toolbar,
+body.immersive-reader-active.reader-controls-visible #view-reader > .page-navigation-bottom {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+}
+
+body.immersive-reader-active .reader-toolbar h2,
+body.immersive-reader-active .reader-status {
+    color: #fff;
+}
+
+body.immersive-reader-active .reader-toolbar h2 {
+    font-size: 1rem;
+}
+
+body.immersive-reader-active .reader-status {
+    font-size: .7rem;
+}
+
+body.immersive-reader-active .reader-controls,
+body.immersive-reader-active .reader-toolbar-actions {
+    gap: .45rem;
+}
+
+body.immersive-reader-active .reader-controls select,
+body.immersive-reader-active .reader-toolbar-actions select,
+body.immersive-reader-active .page-jump input {
+    min-height: 38px;
+    background: rgba(255,255,255,.08);
+    color: #fff;
+}
+
+body.immersive-reader-active .reader-controls select option,
+body.immersive-reader-active .reader-toolbar-actions select option {
+    color: #111;
+    background: #fff;
+}
+
+body.immersive-reader-active .mushaf-toolbar .secondary-btn,
+body.immersive-reader-active .mushaf-toolbar .primary-btn,
+body.immersive-reader-active .page-navigation-bottom .secondary-btn,
+body.immersive-reader-active .page-navigation-bottom .index-btn {
+    min-height: 38px;
+}
+
+body.immersive-reader-active #page-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 4900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: rgba(0,0,0,.72);
+}
+
+body.immersive-reader-active #verses-container {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: #000;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+body.immersive-reader-active #verses-container::-webkit-scrollbar {
+    display: none;
+}
+
+body.immersive-reader-active .mushaf-inner {
+    width: 100%;
+    min-height: 100dvh;
+    height: auto;
+    margin: 0;
+    padding: clamp(1.6rem, 5vh, 3rem) clamp(.75rem, 3.4vw, 3rem) clamp(2rem, 5vh, 3.5rem);
+    background: #000;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+}
+
+body.immersive-reader-active .mushaf-inner::before,
+body.immersive-reader-active .mushaf-meta {
+    display: none !important;
+}
+
+body.immersive-reader-active .mushaf-text {
+    color: #f4f4f4;
+    font-size: clamp(26px, 3.35vw, 43px);
+    line-height: 2.18;
+    word-spacing: .08em;
+    text-shadow: 0 1px 1px rgba(255,255,255,.04);
+}
+
+body.immersive-reader-active .mushaf-surah-heading {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    margin: .2rem auto .7rem;
+}
+
+body.immersive-reader-active .basmala {
+    color: #fff;
+    font-size: clamp(1.3rem, 3vw, 1.9rem);
+    margin: .15rem auto .7rem;
+}
+
+body.immersive-reader-active .ayah-marker {
+    color: #ddd;
+    border-color: #aaa;
+}
+
+body.immersive-reader-active .mushaf-ayah.active-ayah {
+    color: #fff;
+    background: rgba(212,175,55,.16);
+    box-shadow: 0 0 0 1px rgba(212,175,55,.4);
+}
+
+@media (max-width: 768px) {
+    body.immersive-reader-active #view-reader > .reader-toolbar {
+        width: calc(100vw - 16px);
+        flex-direction: row;
+        align-items: center;
+    }
+
+    body.immersive-reader-active #view-reader > .mushaf-toolbar {
+        top: calc(max(8px, env(safe-area-inset-top)) + 60px);
+        width: calc(100vw - 16px);
+        max-height: 46vh;
+        overflow: auto;
+    }
+
+    body.immersive-reader-active .reader-controls {
+        flex-direction: row;
+    }
+
+    body.immersive-reader-active .reader-controls select {
+        max-width: 155px;
+    }
+
+    body.immersive-reader-active .reader-controls button {
+        width: auto;
+        white-space: nowrap;
+    }
+
+    body.immersive-reader-active .mushaf-inner {
+        padding-left: .55rem;
+        padding-right: .55rem;
+        padding-top: max(1.2rem, env(safe-area-inset-top));
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+
+    body.immersive-reader-active .mushaf-text {
+        font-size: clamp(23px, 7.2vw, 34px);
+        line-height: 2.0;
+        text-align: justify;
+    }
+
+    body.immersive-reader-active .page-navigation-bottom {
+        width: calc(100vw - 20px) !important;
+    }
+}
+
+@media (max-width: 430px) {
+    body.immersive-reader-active .reader-toolbar h2 {
+        max-width: 115px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    body.immersive-reader-active .reader-controls select {
+        max-width: 140px;
+        min-width: 0;
+    }
+
+    body.immersive-reader-active .reader-controls button {
+        padding: .5rem .65rem;
+    }
+
+    body.immersive-reader-active .mushaf-text {
+        font-size: clamp(22px, 7.0vw, 31px);
+        line-height: 1.97;
+    }
+}
