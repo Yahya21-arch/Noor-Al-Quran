@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPageData: null,
         pageCache: new Map(),
         reciter: (['ar.alafasy','ar.husary','ar.minshawi','ar.hudhaify','ar.muhammadjibreel','ar.mahermuaiqly'].includes(localStorage.getItem('noorReciter')) ? localStorage.getItem('noorReciter') : 'ar.alafasy'),
+        reciterSelected: false,
         tasbeehCount: Number(localStorage.getItem('noorTasbeehCount')) || 0,
         tasbeehDhikr: localStorage.getItem('noorTasbeehDhikr') || 'سبحان الله',
         tasbeehTarget: Number(localStorage.getItem('noorTasbeehTarget')) || 33,
@@ -413,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // For Al-Fatihah, the fixed Basmala itself represents Ayah 1 so it
             // remains playable/highlightable without rendering the text twice.
             const basmala = section.startsSurah && Number(surah.number) !== 9 ? `
-                <div class="basmala${firstSectionAyahIsBasmala ? ' mushaf-basmala-ayah' : ''}${firstSectionAyahIsBasmala && Number(firstSectionAyah.number) === Number(focusAyahNumber) ? ' active-ayah' : ''}"${firstSectionAyahIsBasmala ? ` data-ayah="${firstSectionAyah.number}" data-surah="${surah.number}" data-ayah-in-surah="${firstSectionAyah.numberInSurah}" tabindex="0"` : ''}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                <div class="basmala${firstSectionAyahIsBasmala ? ' mushaf-basmala-ayah' : ''}${firstSectionAyahIsBasmala && state.isPlaying && state.currentAyah && Number(firstSectionAyah.number) === Number(state.currentAyah.number) ? ' active-ayah' : ''}"${firstSectionAyahIsBasmala ? ` data-ayah="${firstSectionAyah.number}" data-surah="${surah.number}" data-ayah-in-surah="${firstSectionAyah.numberInSurah}" tabindex="0"` : ''}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
             ` : '';
 
 
@@ -424,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ayahHTML = section.ayahs.map(a => {
                 const isFirstAyah = Number(a.numberInSurah) === 1;
                 const text = stripLeadingBasmala(a.text, isFirstAyah, surah.number);
-                const active = Number(a.number) === Number(focusAyahNumber) ? ' active-ayah' : '';
+                const active = state.isPlaying && state.currentAyah && Number(a.number) === Number(state.currentAyah.number) ? ' active-ayah' : '';
 
                 // If the first Ayah consists only of the Basmala (e.g. Al-Fatihah),
                 // the fixed Basmala above represents that Ayah, so do not render it
@@ -461,6 +462,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (el) el.scrollIntoView({behavior: 'smooth', block: 'center'});
             });
         }
+    }
+
+    function fitImmersiveMushafPage() {
+        if (!document.body.classList.contains('immersive-reader-active')) return;
+        const container = $('verses-container');
+        const inner = container?.querySelector('.mushaf-inner');
+        const text = container?.querySelector('.mushaf-text');
+        if (!container || !inner || !text) return;
+
+        // Every Mushaf page should fit inside one viewport.  Start from the
+        // normal mobile size, then reduce only when the rendered page is too
+        // tall. This keeps short pages readable while fitting longer pages.
+        const isSmall = window.matchMedia('(max-width: 430px)').matches;
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        const startSize = isSmall ? 21 : (isMobile ? 24 : 28);
+        const minSize = isSmall ? 13.5 : (isMobile ? 14.5 : 17);
+        const available = Math.max(260, window.innerHeight - 8);
+
+        text.style.fontSize = `${startSize}px`;
+        text.style.lineHeight = isSmall ? '1.64' : (isMobile ? '1.68' : '1.72');
+
+        for (let i = 0; i < 18; i++) {
+            if (inner.scrollHeight <= available) break;
+            const current = parseFloat(getComputedStyle(text).fontSize);
+            const ratio = available / inner.scrollHeight;
+            const next = Math.max(minSize, current * Math.min(0.985, ratio * 0.985));
+            if (Math.abs(next - current) < 0.15) break;
+            text.style.fontSize = `${next}px`;
+        }
+
+        container.scrollTop = 0;
+    }
+
+    function scheduleMushafFit() {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                fitImmersiveMushafPage();
+            });
+        });
     }
 
     function toArabicDigits(value) {
@@ -502,6 +542,7 @@ async function renderReaderPage(page, focusAyahNumber = null, pushHistory = true
             localStorage.setItem('noorCurrentPage', String(page));
 
             renderPage(data, focusAyahNumber);
+            scheduleMushafFit();
 
             // Reset the real scroll container after rendering a new page.
             if (!focusAyahNumber) {
@@ -673,6 +714,10 @@ $('page-input').value = page;
 
     async function playAyah(ayah, options = {}) {
         if (!ayah) return;
+        if (!state.reciterSelected) {
+            updatePlayerUI('اختار القارئ أولًا');
+            return;
+        }
 
         state.currentAyah = ayah;
         state.audioMode = options.mode || state.audioMode;
@@ -884,6 +929,9 @@ $('page-input').value = page;
     }
 
     $('go-page').addEventListener('click', () => renderReaderPage(Number($('page-input').value)));
+
+    window.addEventListener('resize', () => scheduleMushafFit(), {passive: true});
+    window.addEventListener('orientationchange', () => setTimeout(scheduleMushafFit, 80), {passive: true});
     $('page-input').addEventListener('keydown', e => {
         if (e.key === 'Enter') renderReaderPage(Number(e.target.value));
     });
@@ -922,9 +970,12 @@ $('page-input').value = page;
     $('reciter-select').value = state.reciter;
     $('reciter-select').addEventListener('change', e => {
         state.reciter = e.target.value;
+        state.reciterSelected = Boolean(state.reciter);
         localStorage.setItem('noorReciter', state.reciter);
-        updatePlayerUI('Reciter changed');
-        if (state.currentAyah) playAyah(state.currentAyah, {mode: state.audioMode});
+        if (state.isPlaying) stopAudio();
+        state.currentAyah = null;
+        container.querySelectorAll('.mushaf-ayah, .mushaf-basmala-ayah').forEach(el => el.classList.remove('active-ayah'));
+        updatePlayerUI(state.reciterSelected ? 'تم اختيار القارئ' : 'اختار القارئ');
     });
 
     themeToggle.addEventListener('click', () => {
@@ -939,15 +990,6 @@ $('page-input').value = page;
         clearTimeout(state.searchTimer);
         const query = e.target.value;
         state.searchTimer = setTimeout(() => searchQuran(query), 450);
-    });
-
-    // Click any ayah in the Mushaf to start its recitation.
-    container.addEventListener('click', e => {
-        const ayahEl = e.target.closest('.mushaf-ayah, .mushaf-basmala-ayah');
-        if (!ayahEl) return;
-        const number = Number(ayahEl.dataset.ayah);
-        const ayah = getPageAyahs().find(a => Number(a.number) === number);
-        if (ayah) playAyah(ayah, {mode: 'ayah'});
     });
 
     // Immersive reader: a tap anywhere on the Quran page toggles the reader
