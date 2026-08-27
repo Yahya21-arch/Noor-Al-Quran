@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // a second time here.
                 if (!text && isFirstAyah && firstAyahIsBasmala) return '';
 
-                return `<span class="mushaf-ayah${active}${selected}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker" aria-label="رقم الآية ${toArabicDigits(a.numberInSurah)}">﴿${toArabicDigits(a.numberInSurah)}﴾</span></span>`;
+                return `<span class="mushaf-ayah${active}${selected}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker" aria-label="رقم الآية ${toArabicDigits(a.numberInSurah)}">۝${toArabicDigits(a.numberInSurah)}</span></span>`;
             }).join(' ');
 
             return `
@@ -480,41 +480,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = container?.querySelector('.mushaf-text');
         if (!container || !inner || !text) return;
 
-        const mobile = window.matchMedia('(max-width: 768px)').matches;
-        const small = window.matchMedia('(max-width: 430px)').matches;
-        const cs = getComputedStyle(inner);
-        const verticalPadding = (parseFloat(cs.paddingTop)||0) + (parseFloat(cs.paddingBottom)||0);
-        const available = Math.max(220, window.innerHeight - verticalPadding - 4);
-
-        // Prefer a comfortable font and use line-height/spacing to remove
-        // unnecessary bottom whitespace before reducing the font.
-        const preferred = small ? 29 : (mobile ? 31 : 34);
-        const floor = small ? 25 : (mobile ? 27 : 29);
-        const lineHeights = mobile ? [1.34,1.30,1.27,1.24] : [1.42,1.38,1.34,1.30,1.27];
-        let best = null;
-
-        for (const lh of lineHeights) {
-            text.style.lineHeight = String(lh);
-            text.style.fontSize = `${preferred}px`;
-            const natural = inner.scrollHeight;
-            if (natural <= available) {
-                // Keep preferred size; this combination already fits.
-                best = {size:preferred, lh};
-                break;
-            }
-            let lo=floor, hi=preferred;
-            for(let i=0;i<10;i++){
-                const mid=(lo+hi)/2;
-                text.style.fontSize=`${mid}px`;
-                if(inner.scrollHeight<=available) lo=mid; else hi=mid;
-            }
-            const size=lo;
-            if(inner.scrollHeight<=available){ best={size,lh}; break; }
-        }
-        if(!best){ best={size:floor,lh:lineHeights[lineHeights.length-1]}; }
-        text.style.fontSize=`${best.size.toFixed(2)}px`;
-        text.style.lineHeight=String(best.lh);
-        container.scrollTop=0;
+        // Fixed Quran reading size: 20px on every screen.
+        text.style.fontSize = '20px';
+        text.style.lineHeight = '1.72';
+        text.style.wordSpacing = '0';
+        text.style.letterSpacing = '0';
+        inner.style.height = 'auto';
+        inner.style.minHeight = '100dvh';
+        inner.style.overflow = 'visible';
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'hidden';
     }
 
     function scheduleMushafFit() {
@@ -1036,7 +1011,6 @@ $('page-input').value = page;
     container.addEventListener('click', e => {
         const ayahEl = e.target.closest('.mushaf-ayah, .mushaf-basmala-ayah');
         if (!ayahEl || state.currentView !== 'reader') return;
-        e.stopPropagation();
         const number = Number(ayahEl.dataset.ayah);
         const ayah = LOCAL_QURAN.ayahs.find(a => Number(a.number) === number);
         if (!ayah) return;

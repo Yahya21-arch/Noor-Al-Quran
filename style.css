@@ -1152,3 +1152,56 @@ body.immersive-reader-active .ayah-marker {
         line-height: 1.72 !important;
     }
 }
+
+
+/* =========================================================
+   FINAL READER UPDATE — 20px ALL SCREENS
+   ========================================================= */
+body.immersive-reader-active .mushaf-text,
+body.immersive-reader-active .mushaf-ayah-flow,
+body.immersive-reader-active .mushaf-ayah {
+    font-size: 20px !important;
+    line-height: 1.72 !important;
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+}
+
+/* Keep the entire reading area accessible and prevent side clipping. */
+body.immersive-reader-active #verses-container {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+body.immersive-reader-active .mushaf-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    padding-left: max(6px, env(safe-area-inset-left)) !important;
+    padding-right: max(6px, env(safe-area-inset-right)) !important;
+}
+body.immersive-reader-active .mushaf-text,
+body.immersive-reader-active .mushaf-ayah-flow {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+}
+
+/* Quranic end-of-ayah marker: use the Quranic glyph rather than a web badge. */
+body.immersive-reader-active .ayah-marker {
+    display: inline !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--gold) !important;
+    font-family: var(--font-arabic) !important;
+    font-size: .78em !important;
+    line-height: 1 !important;
+    margin: 0 .06em !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    vertical-align: .02em !important;
+}
