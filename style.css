@@ -1281,3 +1281,68 @@ body.immersive-reader-active .mushaf-inner::after {
         padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
     }
 }
+
+/* =========================================================
+   FINAL FIXED MUSHAF PAGE MODE — 20px / NO SCROLL
+   ========================================================= */
+body.immersive-reader-active,
+body.immersive-reader-active .main-content,
+body.immersive-reader-active .views-container,
+body.immersive-reader-active #view-reader,
+body.immersive-reader-active #verses-container {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+}
+
+body.immersive-reader-active .mushaf-inner {
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transform-origin: top center !important;
+    will-change: transform;
+}
+
+body.immersive-reader-active .mushaf-text,
+body.immersive-reader-active .mushaf-ayah-flow,
+body.immersive-reader-active .mushaf-ayah {
+    font-size: 20px !important;
+    line-height: 1.68 !important;
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+}
+
+/* The old spacer was consuming valuable page height. */
+body.immersive-reader-active .mushaf-inner::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Page-to-page reading: no vertical scrolling. */
+body.immersive-reader-active #verses-container,
+body.immersive-reader-active #view-reader {
+    touch-action: pan-x !important;
+    overscroll-behavior: none !important;
+    -webkit-overflow-scrolling: auto !important;
+    scrollbar-width: none !important;
+}
+
+body.immersive-reader-active #verses-container::-webkit-scrollbar,
+body.immersive-reader-active #view-reader::-webkit-scrollbar {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    body.immersive-reader-active .mushaf-inner {
+        padding-left: max(4px, env(safe-area-inset-left)) !important;
+        padding-right: max(4px, env(safe-area-inset-right)) !important;
+        padding-top: max(6px, env(safe-area-inset-top)) !important;
+        padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    }
+}

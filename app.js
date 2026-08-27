@@ -478,30 +478,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = $('verses-container');
         const inner = container?.querySelector('.mushaf-inner');
         const text = container?.querySelector('.mushaf-text');
-        if (!container || !inner || !text) return;
+        const reader = document.getElementById('view-reader');
+        if (!container || !inner || !text || !reader) return;
 
         // Fixed Quran reading size: 20px on every screen.
         text.style.fontSize = '20px';
-        text.style.lineHeight = '1.72';
+        text.style.lineHeight = '1.68';
         text.style.wordSpacing = '0';
         text.style.letterSpacing = '0';
-        inner.style.height = 'auto';
+
+        // Fixed-page mode: never scroll the Quran page. If the content is
+        // taller than the available viewport, scale the complete page down
+        // visually so every ayah remains visible without changing the 20px
+        // source font size.
+        inner.style.transform = 'none';
+        inner.style.transformOrigin = 'top center';
+        inner.style.height = '100dvh';
         inner.style.minHeight = '100dvh';
-        inner.style.maxHeight = 'none';
-        inner.style.overflow = 'visible';
-        container.style.height = 'auto';
+        inner.style.maxHeight = '100dvh';
+        inner.style.overflow = 'hidden';
+        inner.style.boxSizing = 'border-box';
+
+        container.style.height = '100dvh';
         container.style.minHeight = '100dvh';
-        container.style.maxHeight = 'none';
-        container.style.overflowY = 'visible';
+        container.style.maxHeight = '100dvh';
+        container.style.overflow = 'hidden';
         container.style.overflowX = 'hidden';
-        // The outer reader (#view-reader) is the actual scroll container.
-        const reader = document.getElementById('view-reader');
-        if (reader) {
-            reader.style.height = '100dvh';
-            reader.style.minHeight = '100dvh';
-            reader.style.overflowY = 'auto';
-            reader.style.overflowX = 'hidden';
-        }
+        container.style.overflowY = 'hidden';
+
+        reader.style.height = '100dvh';
+        reader.style.minHeight = '100dvh';
+        reader.style.maxHeight = '100dvh';
+        reader.style.overflowY = 'hidden';
+        reader.style.overflowX = 'hidden';
+
+        requestAnimationFrame(() => {
+            const viewportH = Math.max(1, window.innerHeight);
+            const safeTop = parseFloat(getComputedStyle(inner).paddingTop) || 0;
+            const safeBottom = parseFloat(getComputedStyle(inner).paddingBottom) || 0;
+            const availableH = Math.max(1, viewportH - safeTop - safeBottom - 8);
+            const contentH = Math.max(inner.scrollHeight, text.scrollHeight + safeTop + safeBottom);
+            const scale = Math.min(1, availableH / contentH);
+
+            inner.style.transform = `scale(${scale})`;
+            inner.style.transformOrigin = 'top center';
+
+            // Keep the scaled page visually centered horizontally.
+            inner.style.marginLeft = 'auto';
+            inner.style.marginRight = 'auto';
+        });
     }
 
     function scheduleMushafFit() {
@@ -1036,9 +1061,10 @@ $('page-input').value = page;
         });
         ayahEl.classList.add('selected-ayah');
         updatePlayerUI('الآية المحددة — اضغط تشغيل');
-        document.body.classList.add('reader-controls-visible');
     });
 
+    // Immersive reader: any tap on the reading surface, including an ayah, toggles the controls.
+    // The ayah handler above only selects the ayah; it must not force the controls open.
     // Immersive reader: a tap anywhere else on the Quran page toggles controls.
     // Tapping an actual control does not close the overlay.
     container.addEventListener('click', e => {
