@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // a second time here.
                 if (!text && isFirstAyah && firstAyahIsBasmala) return '';
 
-                return `<span class="mushaf-ayah${active}${selected}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
+                return `<span class="mushaf-ayah${active}${selected}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker" aria-label="رقم الآية ${toArabicDigits(a.numberInSurah)}">﴿${toArabicDigits(a.numberInSurah)}﴾</span></span>`;
             }).join(' ');
 
             return `

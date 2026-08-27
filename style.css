@@ -1054,52 +1054,80 @@ html[data-theme="light"] body.immersive-reader-active .mushaf-basmala-ayah.selec
   .mushaf-text, .mushaf-ayah-flow { font-size:21px !important; line-height:1.7 !important; }
 }
 
+
 /* =========================================================
-   FINAL MOBILE MUSHAF FIX — 23px + SIDE CLIPPING FIX
+   FINAL MOBILE MUSHAF FIX — 22px + FULL WIDTH + QURANIC MARKER
    ========================================================= */
+
+body.immersive-reader-active #view-reader,
+body.immersive-reader-active #verses-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
 body.immersive-reader-active .mushaf-inner {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     overflow: visible !important;
-    padding-left: max(10px, env(safe-area-inset-left)) !important;
-    padding-right: max(10px, env(safe-area-inset-right)) !important;
+    margin: 0 !important;
 }
 
+/* المصحف نفسه: لا تقص أي جزء من النص من الجانبين */
 body.immersive-reader-active .mushaf-text,
 body.immersive-reader-active .mushaf-ayah-flow {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     overflow: visible !important;
-    font-size: 23px !important;
-    line-height: 1.78 !important;
-    word-spacing: 0 !important;
-    letter-spacing: 0 !important;
-    text-align: justify !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
 }
 
-body.immersive-reader-active .mushaf-surah-section {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
+/* علامة الآية على هيئة الأقواس القرآنية بدل الدائرة الحديثة */
+body.immersive-reader-active .ayah-marker {
+    display: inline !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    margin: 0 .08em !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: var(--gold) !important;
+    font-family: var(--font-arabic) !important;
+    font-size: .68em !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+    vertical-align: .02em !important;
+    white-space: nowrap !important;
 }
 
-@media (max-width: 430px) {
+@media (max-width: 768px) {
     body.immersive-reader-active .mushaf-inner {
-        padding-left: max(8px, env(safe-area-inset-left)) !important;
-        padding-right: max(8px, env(safe-area-inset-right)) !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
     }
 
     body.immersive-reader-active .mushaf-text,
     body.immersive-reader-active .mushaf-ayah-flow {
-        font-size: 23px !important;
-        line-height: 1.76 !important;
+        font-size: 22px !important;
+        line-height: 1.78 !important;
+        word-spacing: 0 !important;
+        letter-spacing: 0 !important;
+    }
+
+    body.immersive-reader-active .mushaf-surah-heading {
+        max-width: 96% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 430px) {
     body.immersive-reader-active .mushaf-inner {
         padding-left: 6px !important;
         padding-right: 6px !important;
@@ -1107,7 +1135,20 @@ body.immersive-reader-active .mushaf-surah-section {
 
     body.immersive-reader-active .mushaf-text,
     body.immersive-reader-active .mushaf-ayah-flow {
-        font-size: 23px !important;
+        font-size: 22px !important;
+        line-height: 1.75 !important;
+    }
+}
+
+@media (max-width: 360px) {
+    body.immersive-reader-active .mushaf-inner {
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+
+    body.immersive-reader-active .mushaf-text,
+    body.immersive-reader-active .mushaf-ayah-flow {
+        font-size: 22px !important;
         line-height: 1.72 !important;
     }
 }
