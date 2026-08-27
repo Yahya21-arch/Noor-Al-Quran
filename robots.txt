@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /Noor-Al-Quran/
+
+Sitemap: https://yahya21-arch.github.io/Noor-Al-Quran/sitemap.xml
