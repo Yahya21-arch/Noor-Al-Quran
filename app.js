@@ -487,9 +487,21 @@ document.addEventListener('DOMContentLoaded', () => {
         text.style.letterSpacing = '0';
         inner.style.height = 'auto';
         inner.style.minHeight = '100dvh';
+        inner.style.maxHeight = 'none';
         inner.style.overflow = 'visible';
-        container.style.overflowY = 'auto';
+        container.style.height = 'auto';
+        container.style.minHeight = '100dvh';
+        container.style.maxHeight = 'none';
+        container.style.overflowY = 'visible';
         container.style.overflowX = 'hidden';
+        // The outer reader (#view-reader) is the actual scroll container.
+        const reader = document.getElementById('view-reader');
+        if (reader) {
+            reader.style.height = '100dvh';
+            reader.style.minHeight = '100dvh';
+            reader.style.overflowY = 'auto';
+            reader.style.overflowX = 'hidden';
+        }
     }
 
     function scheduleMushafFit() {

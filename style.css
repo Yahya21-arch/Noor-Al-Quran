@@ -1205,3 +1205,79 @@ body.immersive-reader-active .ayah-marker {
     white-space: nowrap !important;
     vertical-align: .02em !important;
 }
+
+/* =========================================================
+   FINAL FIX 2 — PREVENT BOTTOM CLIPPING / 20px ALL SCREENS
+   ========================================================= */
+
+/* The immersive reader itself must be the scroll container. */
+body.immersive-reader-active {
+    overflow: hidden !important;
+}
+
+body.immersive-reader-active .main-content,
+body.immersive-reader-active .views-container,
+body.immersive-reader-active #view-reader {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+}
+
+body.immersive-reader-active #view-reader {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+/* Do not give the Quran content a fixed viewport height. */
+body.immersive-reader-active #verses-container {
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+body.immersive-reader-active .mushaf-inner {
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+}
+
+/* 20px on every screen — no responsive override can enlarge it. */
+body.immersive-reader-active .mushaf-text,
+body.immersive-reader-active .mushaf-ayah-flow,
+body.immersive-reader-active .mushaf-ayah {
+    font-size: 20px !important;
+    line-height: 1.68 !important;
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+}
+
+/* Keep the text inside the available width. */
+body.immersive-reader-active .mushaf-text,
+body.immersive-reader-active .mushaf-ayah-flow {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    box-sizing: border-box !important;
+}
+
+/* Give the last line enough breathing room above the bottom controls. */
+body.immersive-reader-active .mushaf-inner::after {
+    content: "";
+    display: block;
+    height: 90px;
+}
+
+/* Safe-area handling on phones. */
+@supports (padding: env(safe-area-inset-bottom)) {
+    body.immersive-reader-active .mushaf-inner {
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+}
