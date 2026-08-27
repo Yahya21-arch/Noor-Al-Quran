@@ -354,11 +354,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const stripLeadingBasmala = (text, isFirstAyah, surahNumber) => {
             let original = String(text ?? '');
 
-            // The embedded Uthmani page data contains an internal marker
-            // token (\\qt@no{﴿...﴾). It is not part of the Quran text and
-            // must never be shown to the reader. Remove it from every ayah.
+            // Display-only cleanup. The embedded dataset contains a private
+            // application marker after each ayah (\\qt@no{﴿...﴾}); it is
+            // metadata, not Quran text. Never render it.
+            //
+            // The source also contains Unicode pause/waqf signs. We do not
+            // generate any of these signs ourselves, and for this reading
+            // view we hide the pause glyphs so they cannot look duplicated
+            // by the font. The Quran letters and original harakat remain
+            // untouched.
             original = original
                 .replace(/\\qt@no\{﴿[^﴾]*﴾\}?/g, '')
+                .replace(/[ۖۗۘۙۚۛۜ]/g, '')
                 .replace(/\s{2,}/g, ' ')
                 .trim();
 
@@ -425,14 +432,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const ayahHTML = section.ayahs.map(a => {
                 const isFirstAyah = Number(a.numberInSurah) === 1;
                 const text = stripLeadingBasmala(a.text, isFirstAyah, surah.number);
-                const active = state.isPlaying && state.currentAyah && Number(a.number) === Number(state.currentAyah.number) ? ' active-ayah' : '';
+                const isCurrent = state.currentAyah && Number(a.number) === Number(state.currentAyah.number);
+                const active = state.isPlaying && isCurrent ? ' active-ayah' : '';
+                const selected = !state.isPlaying && isCurrent ? ' selected-ayah' : '';
 
                 // If the first Ayah consists only of the Basmala (e.g. Al-Fatihah),
                 // the fixed Basmala above represents that Ayah, so do not render it
                 // a second time here.
                 if (!text && isFirstAyah && firstAyahIsBasmala) return '';
 
-                return `<span class="mushaf-ayah${active}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
+                return `<span class="mushaf-ayah${active}${selected}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker">${toArabicDigits(a.numberInSurah)}</span></span>`;
             }).join(' ');
 
             return `
@@ -471,28 +480,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = container?.querySelector('.mushaf-text');
         if (!container || !inner || !text) return;
 
-        // Every Mushaf page should fit inside one viewport.  Start from the
-        // normal mobile size, then reduce only when the rendered page is too
-        // tall. This keeps short pages readable while fitting longer pages.
-        const isSmall = window.matchMedia('(max-width: 430px)').matches;
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        const startSize = isSmall ? 21 : (isMobile ? 24 : 28);
-        const minSize = isSmall ? 13.5 : (isMobile ? 14.5 : 17);
-        const available = Math.max(260, window.innerHeight - 8);
+        const mobile = window.matchMedia('(max-width: 768px)').matches;
+        const small = window.matchMedia('(max-width: 430px)').matches;
+        const cs = getComputedStyle(inner);
+        const verticalPadding = (parseFloat(cs.paddingTop)||0) + (parseFloat(cs.paddingBottom)||0);
+        const available = Math.max(220, window.innerHeight - verticalPadding - 4);
 
-        text.style.fontSize = `${startSize}px`;
-        text.style.lineHeight = isSmall ? '1.64' : (isMobile ? '1.68' : '1.72');
+        // Prefer a comfortable font and use line-height/spacing to remove
+        // unnecessary bottom whitespace before reducing the font.
+        const preferred = small ? 29 : (mobile ? 31 : 34);
+        const floor = small ? 25 : (mobile ? 27 : 29);
+        const lineHeights = mobile ? [1.34,1.30,1.27,1.24] : [1.42,1.38,1.34,1.30,1.27];
+        let best = null;
 
-        for (let i = 0; i < 18; i++) {
-            if (inner.scrollHeight <= available) break;
-            const current = parseFloat(getComputedStyle(text).fontSize);
-            const ratio = available / inner.scrollHeight;
-            const next = Math.max(minSize, current * Math.min(0.985, ratio * 0.985));
-            if (Math.abs(next - current) < 0.15) break;
-            text.style.fontSize = `${next}px`;
+        for (const lh of lineHeights) {
+            text.style.lineHeight = String(lh);
+            text.style.fontSize = `${preferred}px`;
+            const natural = inner.scrollHeight;
+            if (natural <= available) {
+                // Keep preferred size; this combination already fits.
+                best = {size:preferred, lh};
+                break;
+            }
+            let lo=floor, hi=preferred;
+            for(let i=0;i<10;i++){
+                const mid=(lo+hi)/2;
+                text.style.fontSize=`${mid}px`;
+                if(inner.scrollHeight<=available) lo=mid; else hi=mid;
+            }
+            const size=lo;
+            if(inner.scrollHeight<=available){ best={size,lh}; break; }
         }
-
-        container.scrollTop = 0;
+        if(!best){ best={size:floor,lh:lineHeights[lineHeights.length-1]}; }
+        text.style.fontSize=`${best.size.toFixed(2)}px`;
+        text.style.lineHeight=String(best.lh);
+        container.scrollTop=0;
     }
 
     function scheduleMushafFit() {
@@ -946,8 +968,19 @@ $('page-input').value = page;
         e.target.value = '';
     });
 
+    function playSelectedOrCurrentSurah() {
+        if (state.currentAyah) {
+            const selectedSurah = Number(state.currentAyah.surah?.number);
+            if (selectedSurah) state.currentSurah = selectedSurah;
+            state.audioMode = 'surah';
+            playAyah(state.currentAyah, {mode: 'surah'});
+            return;
+        }
+        playCurrentSurah();
+    }
+
     $('bookmark-page').addEventListener('click', saveCurrentPage);
-    $('play-surah-audio').addEventListener('click', playCurrentSurah);
+    $('play-surah-audio').addEventListener('click', playSelectedOrCurrentSurah);
     $('audio-quick-play').addEventListener('click', () => {
         showView('reader');
         if (state.currentAyah) togglePlayPause();
@@ -980,10 +1013,16 @@ $('page-input').value = page;
 
     themeToggle.addEventListener('click', () => {
         const html = document.documentElement;
-        html.setAttribute('data-theme',
-            html.getAttribute('data-theme') === 'emerald-dark' ? 'light' : 'emerald-dark'
-        );
+        const next = html.getAttribute('data-theme') === 'emerald-dark' ? 'light' : 'emerald-dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('noorTheme', next);
+        scheduleMushafFit();
     });
+
+    const savedTheme = localStorage.getItem('noorTheme');
+    if (savedTheme === 'light' || savedTheme === 'emerald-dark') {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
 
     // Search.
     $('global-search').addEventListener('input', e => {
@@ -992,8 +1031,30 @@ $('page-input').value = page;
         state.searchTimer = setTimeout(() => searchQuran(query), 450);
     });
 
-    // Immersive reader: a tap anywhere on the Quran page toggles the reader
-    // controls. Tapping an actual control does not close the overlay.
+    // Selecting an ayah never starts audio. It only marks the ayah as the
+    // starting point for the explicit Play button in the reader toolbar.
+    container.addEventListener('click', e => {
+        const ayahEl = e.target.closest('.mushaf-ayah, .mushaf-basmala-ayah');
+        if (!ayahEl || state.currentView !== 'reader') return;
+        e.stopPropagation();
+        const number = Number(ayahEl.dataset.ayah);
+        const ayah = LOCAL_QURAN.ayahs.find(a => Number(a.number) === number);
+        if (!ayah) return;
+
+        if (state.isPlaying) stopAudio();
+        state.currentAyah = ayah;
+        state.currentSurah = Number(ayah.surah?.number || ayahEl.dataset.surah || state.currentSurah);
+        state.audioMode = 'surah';
+        container.querySelectorAll('.mushaf-ayah, .mushaf-basmala-ayah').forEach(el => {
+            el.classList.remove('active-ayah', 'selected-ayah');
+        });
+        ayahEl.classList.add('selected-ayah');
+        updatePlayerUI('الآية المحددة — اضغط تشغيل');
+        document.body.classList.add('reader-controls-visible');
+    });
+
+    // Immersive reader: a tap anywhere else on the Quran page toggles controls.
+    // Tapping an actual control does not close the overlay.
     container.addEventListener('click', e => {
         if (state.currentView !== 'reader') return;
         if (e.target.closest('button, select, input, .reader-toolbar, .mushaf-toolbar, .page-navigation-bottom')) return;
