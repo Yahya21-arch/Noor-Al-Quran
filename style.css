@@ -1281,3 +1281,43 @@ body.immersive-reader-active .mushaf-inner::after {
         padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
     }
 }
+
+
+/* SIDE GAPS FIX — keep the Mushaf page nearly edge-to-edge */
+body.immersive-reader-active .views-container {
+    padding: 0 !important;
+}
+
+body.immersive-reader-active .mushaf-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+body.immersive-reader-active .mushaf-inner {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    box-sizing: border-box !important;
+}
+
+body.immersive-reader-active .mushaf-text,
+body.immersive-reader-active .mushaf-ayah-flow {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    body.immersive-reader-active .mushaf-inner {
+        padding-left: 1px !important;
+        padding-right: 1px !important;
+    }
+}
