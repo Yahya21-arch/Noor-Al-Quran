@@ -481,16 +481,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = document.getElementById('view-reader');
         if (!container || !inner || !text || !reader) return;
 
-        // Fixed Quran reading size: 20px on every screen.
-        text.style.fontSize = '20px';
-        text.style.lineHeight = '1.68';
+        // Respect the font-size selected in Settings on every screen.
+        // Default remains 20px, while the range can change it dynamically.
+        const range = $('font-size-range');
+        const selectedFontSize = Number(range?.value || localStorage.getItem('noorFontSize') || 20);
+        const safeFontSize = Math.min(48, Math.max(20, selectedFontSize));
+        text.style.fontSize = `${safeFontSize}px`;
+        text.style.lineHeight = safeFontSize <= 24 ? '1.68' : '1.75';
         text.style.wordSpacing = '0';
         text.style.letterSpacing = '0';
 
-        // Fixed-page mode: never scroll the Quran page. If the content is
-        // taller than the available viewport, scale the complete page down
-        // visually so every ayah remains visible without changing the 20px
-        // source font size.
+        // Fixed-page reader: the page itself stays full width.  When a long
+        // page needs to be visually fitted vertically, compensate the
+        // transformed layout width so scaling does NOT create side gaps.
         inner.style.transform = 'none';
         inner.style.transformOrigin = 'top center';
         inner.style.height = '100dvh';
@@ -498,6 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inner.style.maxHeight = '100dvh';
         inner.style.overflow = 'hidden';
         inner.style.boxSizing = 'border-box';
+        inner.style.marginLeft = 'auto';
+        inner.style.marginRight = 'auto';
 
         container.style.height = '100dvh';
         container.style.minHeight = '100dvh';
@@ -518,12 +523,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const safeBottom = parseFloat(getComputedStyle(inner).paddingBottom) || 0;
             const availableH = Math.max(1, viewportH - safeTop - safeBottom - 8);
             const contentH = Math.max(inner.scrollHeight, text.scrollHeight + safeTop + safeBottom);
-            const scale = Math.min(1, availableH / contentH);
+            let scale = Math.min(1, availableH / contentH);
+
+            if (scale < 1) {
+                // Compensate the layout width for the visual scale. This keeps
+                // the rendered page flush with the screen edges instead of
+                // producing the unwanted side margins seen on long pages.
+                const viewportW = Math.max(1, container.clientWidth || window.innerWidth);
+                inner.style.width = `${viewportW / scale}px`;
+                inner.style.maxWidth = 'none';
+
+                // Wider layout means fewer wrapped lines, so recalculate once
+                // after the width correction and use the final scale.
+                const correctedContentH = Math.max(inner.scrollHeight, text.scrollHeight + safeTop + safeBottom);
+                scale = Math.min(1, availableH / Math.max(1, correctedContentH));
+                inner.style.width = `${viewportW / scale}px`;
+            } else {
+                inner.style.width = '100vw';
+                inner.style.maxWidth = '100%';
+            }
 
             inner.style.transform = `scale(${scale})`;
             inner.style.transformOrigin = 'top center';
-
-            // Keep the scaled page visually centered horizontally.
             inner.style.marginLeft = 'auto';
             inner.style.marginRight = 'auto';
         });
