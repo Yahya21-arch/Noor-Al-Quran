@@ -131,11 +131,16 @@
 
                     <div id="page-loading" class="page-loading hidden">Loading Mushaf page…</div>
 
-                    <div id="verses-container" class="verses-container mushaf-page" dir="rtl">
-                        <div class="mushaf-inner">
-                            <div class="mushaf-header">سُورَةُ الْفَاتِحَةِ</div>
-                            <div class="mushaf-text">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-                            <div class="mushaf-footer-number">1</div>
+                    <div id="verses-container" class="verses-container mushaf-page pdf-mushaf-page" dir="rtl">
+                        <div class="mushaf-pdf-frame-wrap">
+                            <iframe
+                                id="mushaf-pdf"
+                                class="mushaf-pdf-frame"
+                                title="مصحف المدينة المنورة"
+                                src="mushaf.pdf#page=4&zoom=page-fit&toolbar=0&navpanes=0&scrollbar=0"
+                                loading="eager"
+                                allow="fullscreen"
+                            ></iframe>
                         </div>
                     </div>
 

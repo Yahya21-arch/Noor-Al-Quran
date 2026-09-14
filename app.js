@@ -186,6 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const TOTAL_PAGES = 604;
 
+    // The supplied King Fahd / Madinah Mushaf PDF contains 624 PDF pages.
+    // The actual 604 Mushaf pages start at PDF page 4 and end at PDF page 607.
+    // Keep the app's logical Quran page number (1..604) separate from the
+    // physical PDF page number so Surah/Juz selection continues to work.
+    const MUSHAF_PDF_FILE = 'mushaf.pdf';
+    const MUSHAF_PDF_PAGE_OFFSET = 3;
+
+    const getMushafPdfPage = page =>
+        Math.max(1, Math.min(624, Number(page) + MUSHAF_PDF_PAGE_OFFSET));
+
     const state = {
         currentView: 'home',
         surahs: [],
@@ -200,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tasbeehTarget: Number(localStorage.getItem('noorTasbeehTarget')) || 33,
         currentAyahIndex: -1,
         currentAyah: null,
+        selectedSurahRange: null,
         audioMode: 'ayah',
         repeatAyah: false,
         isPlaying: false,
@@ -312,6 +323,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (first?.surah) {
             state.currentSurah = first.surah.number;
             $('current-surah-title').textContent = first.surah.englishName || first.surah.name;
+        }
+
+        // The supplied PDF is the authoritative visual Mushaf. Do not
+        // recreate the printed page with HTML/CSS. When a Surah is selected,
+        // use the extracted PDF containing only that Surah's page range so
+        // the embedded viewer cannot scroll into unrelated Surahs.
+        const pdfFrame = $('mushaf-pdf');
+        if (pdfFrame) {
+            const logicalPage = Number(data.page || state.currentPage);
+            let pdfFile = MUSHAF_PDF_FILE;
+            let pdfPage = getMushafPdfPage(logicalPage);
+
+            if (state.selectedSurahRange) {
+                const scope = state.selectedSurahRange;
+                pdfFile = `mushaf_surahs/surah-${scope.number}.pdf`;
+                pdfPage = logicalPage - scope.start + 1;
+            }
+
+            const nextSrc = `${pdfFile}#page=${pdfPage}&zoom=page-fit&toolbar=0&navpanes=0&scrollbar=0`;
+            if (pdfFrame.getAttribute('src') !== nextSrc) {
+                pdfFrame.setAttribute('src', nextSrc);
+            }
+            container.dataset.logicalPage = String(logicalPage);
+            container.dataset.pdfPage = String(pdfPage);
+            container.dataset.pdfFile = pdfFile;
+            return;
         }
 
         // IMPORTANT: Keep each Surah heading/Basmala immediately before
@@ -588,7 +625,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 async function renderReaderPage(page, focusAyahNumber = null, pushHistory = true) {
-        page = Math.max(1, Math.min(TOTAL_PAGES, Number(page) || 1));
+        page = Number(page) || 1;
+        const scope = state.selectedSurahRange;
+        if (scope) {
+            page = Math.max(scope.start, Math.min(scope.end, page));
+        } else {
+            page = Math.max(1, Math.min(TOTAL_PAGES, page));
+        }
         setLoading(true);
         try {
             const data = await getPage(page);
@@ -597,19 +640,34 @@ async function renderReaderPage(page, focusAyahNumber = null, pushHistory = true
             localStorage.setItem('noorCurrentPage', String(page));
 
             renderPage(data, focusAyahNumber);
+            if (scope) {
+                $('current-surah-title').textContent = scope.name;
+            }
             scheduleMushafFit();
 
             // Reset the real scroll container after rendering a new page.
             if (!focusAyahNumber) {
                 requestAnimationFrame(() => requestAnimationFrame(() => scrollAppToTop(true)));
             }
-$('page-input').value = page;
-            $('page-indicator').textContent = `${page} / ${TOTAL_PAGES}`;
-            $('reader-status').textContent = `Page ${page} of ${TOTAL_PAGES}`;
-            $('prev-page').disabled = page === 1;
-            $('next-page').disabled = page === TOTAL_PAGES;
-            $('prev-page-bottom').disabled = page === 1;
-            $('next-page-bottom').disabled = page === TOTAL_PAGES;
+const rangeStart = scope?.start ?? 1;
+            const rangeEnd = scope?.end ?? TOTAL_PAGES;
+            const rangeTotal = rangeEnd - rangeStart + 1;
+            const rangePosition = page - rangeStart + 1;
+            const pageInput = $('page-input');
+            pageInput.value = page;
+            pageInput.min = rangeStart;
+            pageInput.max = rangeEnd;
+            if (scope) {
+                $('page-indicator').textContent = `${rangePosition} / ${rangeTotal}`;
+                $('reader-status').textContent = `سورة ${scope.name} — صفحة ${rangePosition} من ${rangeTotal}`;
+            } else {
+                $('page-indicator').textContent = `${page} / ${TOTAL_PAGES}`;
+                $('reader-status').textContent = `Page ${page} of ${TOTAL_PAGES}`;
+            }
+            $('prev-page').disabled = page <= rangeStart;
+            $('next-page').disabled = page >= rangeEnd;
+            $('prev-page-bottom').disabled = page <= rangeStart;
+            $('next-page-bottom').disabled = page >= rangeEnd;
 
             if (pushHistory) {
                 const url = new URL(location.href);
@@ -635,13 +693,31 @@ $('page-input').value = page;
     async function openSurah(surahNumber) {
         const surah = state.surahs.find(s => s.number === Number(surahNumber));
         if (!surah) return;
-        const firstAyah = LOCAL_QURAN.ayahs.find(a => Number(a.surah.number) === Number(surahNumber) && Number(a.numberInSurah) === 1);
+
+        const surahAyahs = LOCAL_QURAN.ayahs.filter(
+            a => Number(a.surah?.number) === Number(surahNumber)
+        );
+        if (!surahAyahs.length) return;
+
+        const pages = surahAyahs.map(a => Number(a.page)).filter(Number.isFinite);
+        const start = Math.min(...pages);
+        const end = Math.max(...pages);
+        const firstAyah = surahAyahs.find(a => Number(a.numberInSurah) === 1) || surahAyahs[0];
+
+        state.selectedSurahRange = {
+            number: Number(surahNumber),
+            name: surah.name || surah.englishName || '',
+            start,
+            end
+        };
+
         showView('reader');
-        await renderReaderPage(firstAyah?.page || 1, firstAyah?.number, true);
+        await renderReaderPage(start, firstAyah?.number, true);
     }
 
     async function openJuz(juz) {
         if (!juz) return;
+        state.selectedSurahRange = null;
         const firstAyah = LOCAL_QURAN.ayahs.find(a => Number(a.juz) === Number(juz));
         showView('reader');
         await renderReaderPage(firstAyah?.page || 1, firstAyah?.number, true);
@@ -670,6 +746,7 @@ $('page-input').value = page;
         box.querySelectorAll('.search-result').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const r = results[Number(btn.dataset.resultIndex)];
+                state.selectedSurahRange = null;
                 showView('reader');
                 await renderReaderPage(r.page, r.number, true);
             });
@@ -1267,7 +1344,8 @@ $('page-input').value = page;
         setTimeout(() => loadingScreen.remove(), 500);
     }, 800);
 
-    // Restore last reading page.
+    // Restore last reading page in full Mushaf mode.
+    state.selectedSurahRange = null;
     renderReaderPage(state.currentPage, null, false);
 });
 
