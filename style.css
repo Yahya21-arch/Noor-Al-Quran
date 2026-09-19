@@ -1321,3 +1321,40 @@ body.immersive-reader-active .mushaf-ayah-flow {
         padding-right: 1px !important;
     }
 }
+
+/* Exact offline Madinah Mushaf pages extracted from the supplied PDF. */
+.mushaf-paper-shell{
+    width:100%;
+    max-width:750px;
+    margin:0 auto;
+    background:#fff;
+    box-shadow:0 12px 36px rgba(0,0,0,.22);
+    line-height:0;
+    overflow:hidden;
+}
+.mushaf-paper-image{
+    display:block;
+    width:100%;
+    height:auto;
+    max-width:100%;
+    user-select:none;
+    -webkit-user-drag:none;
+    background:#fff;
+}
+body.immersive-reader-active #verses-container.mushaf-page{
+    max-width:none;
+    width:100%;
+    margin:0;
+    padding:0;
+    touch-action:pan-y;
+    background:#fff;
+}
+body.immersive-reader-active .mushaf-paper-shell{
+    max-width:750px;
+    margin:0 auto;
+    box-shadow:none;
+}
+@media (max-width:768px){
+    .mushaf-paper-shell{max-width:100%;box-shadow:none;}
+    body.immersive-reader-active .mushaf-paper-shell{max-width:100%;}
+}
