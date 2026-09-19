@@ -338,20 +338,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = document.getElementById('view-reader');
         if (!container || !shell || !image || !reader) return;
 
-        container.style.height = 'auto';
-        container.style.minHeight = '0';
-        container.style.maxHeight = 'none';
-        container.style.overflow = 'auto';
+        // Show the complete PDF page edge-to-edge without cropping the sides.
+        // The page is fitted to the full viewport; object-fit: fill is used so
+        // no part of the original Mushaf page is hidden on narrow phones.
+        container.style.width = '100vw';
+        container.style.height = '100dvh';
+        container.style.minHeight = '100dvh';
+        container.style.maxHeight = '100dvh';
+        container.style.overflow = 'hidden';
         container.style.overflowX = 'hidden';
-        container.style.overflowY = 'auto';
-        shell.style.width = '100%';
-        shell.style.maxWidth = '750px';
-        shell.style.margin = '0 auto';
-        image.style.width = '100%';
-        image.style.height = 'auto';
-        image.style.maxWidth = '100%';
+        container.style.overflowY = 'hidden';
+        shell.style.width = '100vw';
+        shell.style.height = '100dvh';
+        shell.style.maxWidth = 'none';
+        shell.style.maxHeight = '100dvh';
+        shell.style.margin = '0';
+        image.style.width = '100vw';
+        image.style.height = '100dvh';
+        image.style.maxWidth = 'none';
+        image.style.maxHeight = 'none';
         image.style.display = 'block';
-        image.style.objectFit = 'contain';
+        image.style.objectFit = 'fill';
+        image.style.objectPosition = 'center center';
     }
 
     function scheduleMushafFit() {

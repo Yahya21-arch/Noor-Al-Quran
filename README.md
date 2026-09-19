@@ -35,3 +35,7 @@ Noor Al-Quran is a luxury, production-ready, highly accessible digital Quran exp
 MIT License - See [LICENSE](./LICENSE) for details.
 ## Offline Madinah Mushaf Reader
 The Quran reader now displays the 604 exact page images extracted losslessly from the user-supplied King Fahd Complex Madinah Mushaf PDF. The page artwork is stored locally under `mushaf-pages/`, so the Quran page itself does not require an internet connection.
+
+
+### Full-screen Mushaf pages
+The 604 locally stored page images are automatically cropped to remove the blank PDF margins outside the actual King Fahd Mushaf page. The original Mushaf content is retained, and the cropped images are displayed edge-to-edge at the device width.
