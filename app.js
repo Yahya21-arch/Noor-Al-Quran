@@ -311,243 +311,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (first?.surah) {
             state.currentSurah = first.surah.number;
-            $('current-surah-title').textContent = first.surah.englishName || first.surah.name;
+            $('current-surah-title').textContent = first.surah.name || first.surah.englishName || 'المصحف';
         }
 
-        // IMPORTANT: Keep each Surah heading/Basmala immediately before
-        // the Surah's own ayahs. The old implementation rendered all
-        // headings first, which caused short Surahs on the same Mushaf
-        // page to appear visually mixed together.
-        const sections = [];
-        let currentSurahNumber = null;
-        let currentSection = null;
-
-        ayahs.forEach((a) => {
-            const surahNumber = Number(a.surah?.number);
-
-            if (surahNumber !== currentSurahNumber) {
-                currentSurahNumber = surahNumber;
-                currentSection = {
-                    surah: a.surah,
-                    ayahs: [],
-                    startsSurah: Number(a.numberInSurah) === 1
-                };
-                sections.push(currentSection);
-            }
-
-            currentSection.ayahs.push(a);
-        });
-
-        // Detect/remove the duplicated Basmala from the first ayah only.
-        // This changes display only; the original API data is never modified.
-        const normalizeArabic = value => String(value ?? '')
-            .replace(/[\u064B-\u065F\u0670]/g, '')
-            .replace(/[ٱأإآ]/g, 'ا')
-            .replace(/ى/g, 'ي')
-            .replace(/ـ/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-        const BASMALA_WORDS = ['بسم', 'الله', 'الرحمن', 'الرحيم'];
-        const BASMALA_NORMALIZED = BASMALA_WORDS.join(' ');
-
-        const stripLeadingBasmala = (text, isFirstAyah, surahNumber) => {
-            let original = String(text ?? '');
-
-            // Display-only cleanup. The embedded dataset contains a private
-            // application marker after each ayah (\\qt@no{﴿...﴾}); it is
-            // metadata, not Quran text. Never render it.
-            //
-            // The source also contains Unicode pause/waqf signs. We do not
-            // generate any of these signs ourselves, and for this reading
-            // view we hide the pause glyphs so they cannot look duplicated
-            // by the font. The Quran letters and original harakat remain
-            // untouched.
-            original = original
-                .replace(/\\qt@no\{﴿[^﴾]*﴾\}?/g, '')
-                .replace(/[ۖۗۘۙۚۛۜ]/g, '')
-                .replace(/\s{2,}/g, ' ')
-                .trim();
-
-            if (!isFirstAyah || Number(surahNumber) === 9 || !original.trim()) {
-                return original;
-            }
-
-            const words = original.trim().split(/\s+/);
-            const normalizedWords = words.map(normalizeArabic);
-
-            // Match the first four normalized words instead of relying on an
-            // exact Unicode string. This handles Uthmani variants such as
-            // ٱ / أ / إ and different harakat/marks.
-            const isBasmalaPrefix = BASMALA_WORDS.every(
-                (word, index) => normalizedWords[index] === word
-            );
-
-            if (!isBasmalaPrefix) return original;
-
-            // Remove only the Basmala words from the beginning.
-            return words.slice(4).join(' ').trim();
-        };
-
-        // Each visual Mushaf page is isolated. If a physical Quran page
-        // contains more than one short Surah (for example Al-Ikhlas,
-        // Al-Falaq and An-Nas on the final page), never render those Surahs
-        // together in one reader view. When a Surah is opened from the index
-        // we select the section containing its first Ayah; otherwise the first
-        // section of the physical page is shown. This keeps one displayed
-        // Mushaf image/page per reader screen while preserving the original
-        // 604-page data and navigation.
-        let visibleSections = sections;
-        if (sections.length > 1) {
-            const focusedSection = focusAyahNumber
-                ? sections.find(section => section.ayahs.some(a => Number(a.number) === Number(focusAyahNumber)))
-                : sections.find(section => Number(section.surah?.number) === Number(state.currentSurah));
-            visibleSections = [focusedSection || sections[0]];
-        }
-
-        const sectionHTML = visibleSections.map(section => {
-            const surah = section.surah || {};
-            const heading = section.startsSurah ? `
-                <div class="mushaf-surah-heading" aria-label="${escapeHTML(surah.name || '')}">
-                    <span>${escapeHTML(surah.name || '')}</span>
-                </div>
-            ` : '';
-
-            const firstSectionAyah = section.ayahs.find(a => Number(a.numberInSurah) === 1);
-            const firstSectionAyahIsBasmala = !!firstSectionAyah &&
-                normalizeArabic(firstSectionAyah.text) === normalizeArabic('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ');
-
-            // Surah At-Tawbah (9) has no Basmala at its beginning.
-            // For Al-Fatihah, the fixed Basmala itself represents Ayah 1 so it
-            // remains playable/highlightable without rendering the text twice.
-            const basmala = section.startsSurah && Number(surah.number) !== 9 ? `
-                <div class="basmala${firstSectionAyahIsBasmala ? ' mushaf-basmala-ayah' : ''}${firstSectionAyahIsBasmala && state.isPlaying && state.currentAyah && Number(firstSectionAyah.number) === Number(state.currentAyah.number) ? ' active-ayah' : ''}"${firstSectionAyahIsBasmala ? ` data-ayah="${firstSectionAyah.number}" data-surah="${surah.number}" data-ayah-in-surah="${firstSectionAyah.numberInSurah}" tabindex="0"` : ''}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-            ` : '';
-
-
-            const firstAyah = section.ayahs.find(a => Number(a.numberInSurah) === 1);
-            const firstAyahIsBasmala = !!firstAyah &&
-                normalizeArabic(firstAyah.text) === BASMALA_NORMALIZED;
-
-            const ayahHTML = section.ayahs.map(a => {
-                const isFirstAyah = Number(a.numberInSurah) === 1;
-                const text = stripLeadingBasmala(a.text, isFirstAyah, surah.number);
-                const isCurrent = state.currentAyah && Number(a.number) === Number(state.currentAyah.number);
-                const active = state.isPlaying && isCurrent ? ' active-ayah' : '';
-                const selected = !state.isPlaying && isCurrent ? ' selected-ayah' : '';
-
-                // If the first Ayah consists only of the Basmala (e.g. Al-Fatihah),
-                // the fixed Basmala above represents that Ayah, so do not render it
-                // a second time here.
-                if (!text && isFirstAyah && firstAyahIsBasmala) return '';
-
-                return `<span class="mushaf-ayah${active}${selected}" data-ayah="${a.number}" data-surah="${surah.number}" data-ayah-in-surah="${a.numberInSurah}" tabindex="0">${escapeHTML(text)} <span class="ayah-marker" aria-label="رقم الآية ${toArabicDigits(a.numberInSurah)}">۝${toArabicDigits(a.numberInSurah)}</span></span>`;
-            }).join(' ');
-
-            return `
-                <section class="mushaf-surah-section" data-surah-section="${surah.number || ''}">
-                    ${heading}
-                    ${basmala}
-                    <div class="mushaf-ayah-flow">${ayahHTML}</div>
-                </section>
-            `;
-        }).join('');
+        // The reader uses the exact page artwork extracted from the uploaded
+        // King Fahd Complex Madinah Mushaf PDF. No Quran text is reflowed here.
+        const pageNumber = Number(data.page || state.currentPage || 1);
+        const pageSrc = `mushaf-pages/page-${String(pageNumber).padStart(3, '0')}.jpg`;
 
         container.innerHTML = `
-            <div class="mushaf-inner">
-                <div class="mushaf-text" lang="ar">${sectionHTML}</div>
-                <div class="mushaf-meta">
-                    <span>Juz ${first?.juz || ''}</span>
-                    <span>Hizb ${first?.hizbQuarter || ''}</span>
-                    <span class="mushaf-page-number">${toArabicDigits(data.page || state.currentPage)}</span>
-                    <span>${escapeHTML(pageTitle(ayahs))}</span>
-                </div>
+            <div class="mushaf-paper-shell" aria-label="صفحة المصحف ${pageNumber}">
+                <img class="mushaf-paper-image"
+                     src="${pageSrc}"
+                     alt="صفحة المصحف رقم ${pageNumber}"
+                     draggable="false"
+                     decoding="async"
+                     loading="eager">
             </div>
         `;
-
-        if (focusAyahNumber) {
-            requestAnimationFrame(() => {
-                const el = container.querySelector(`[data-ayah="${focusAyahNumber}"]`);
-                if (el) el.scrollIntoView({behavior: 'smooth', block: 'center'});
-            });
-        }
     }
 
     function fitImmersiveMushafPage() {
         if (!document.body.classList.contains('immersive-reader-active')) return;
-        const container = $('verses-container');
-        const inner = container?.querySelector('.mushaf-inner');
-        const text = container?.querySelector('.mushaf-text');
+        const shell = container?.querySelector('.mushaf-paper-shell');
+        const image = container?.querySelector('.mushaf-paper-image');
         const reader = document.getElementById('view-reader');
-        if (!container || !inner || !text || !reader) return;
+        if (!container || !shell || !image || !reader) return;
 
-        // Respect the font-size selected in Settings on every screen.
-        // Default remains 20px, while the range can change it dynamically.
-        const range = $('font-size-range');
-        const selectedFontSize = Number(range?.value || localStorage.getItem('noorFontSize') || 20);
-        const safeFontSize = Math.min(48, Math.max(20, selectedFontSize));
-        text.style.fontSize = `${safeFontSize}px`;
-        text.style.lineHeight = safeFontSize <= 24 ? '1.68' : '1.75';
-        text.style.wordSpacing = '0';
-        text.style.letterSpacing = '0';
-
-        // Fixed-page reader: the page itself stays full width.  When a long
-        // page needs to be visually fitted vertically, compensate the
-        // transformed layout width so scaling does NOT create side gaps.
-        inner.style.transform = 'none';
-        inner.style.transformOrigin = 'top center';
-        inner.style.height = '100dvh';
-        inner.style.minHeight = '100dvh';
-        inner.style.maxHeight = '100dvh';
-        inner.style.overflow = 'hidden';
-        inner.style.boxSizing = 'border-box';
-        inner.style.marginLeft = 'auto';
-        inner.style.marginRight = 'auto';
-
-        container.style.height = '100dvh';
-        container.style.minHeight = '100dvh';
-        container.style.maxHeight = '100dvh';
-        container.style.overflow = 'hidden';
+        container.style.height = 'auto';
+        container.style.minHeight = '0';
+        container.style.maxHeight = 'none';
+        container.style.overflow = 'auto';
         container.style.overflowX = 'hidden';
-        container.style.overflowY = 'hidden';
-
-        reader.style.height = '100dvh';
-        reader.style.minHeight = '100dvh';
-        reader.style.maxHeight = '100dvh';
-        reader.style.overflowY = 'hidden';
-        reader.style.overflowX = 'hidden';
-
-        requestAnimationFrame(() => {
-            const viewportH = Math.max(1, window.innerHeight);
-            const safeTop = parseFloat(getComputedStyle(inner).paddingTop) || 0;
-            const safeBottom = parseFloat(getComputedStyle(inner).paddingBottom) || 0;
-            const availableH = Math.max(1, viewportH - safeTop - safeBottom - 8);
-            const contentH = Math.max(inner.scrollHeight, text.scrollHeight + safeTop + safeBottom);
-            let scale = Math.min(1, availableH / contentH);
-
-            if (scale < 1) {
-                // Compensate the layout width for the visual scale. This keeps
-                // the rendered page flush with the screen edges instead of
-                // producing the unwanted side margins seen on long pages.
-                const viewportW = Math.max(1, container.clientWidth || window.innerWidth);
-                inner.style.width = `${viewportW / scale}px`;
-                inner.style.maxWidth = 'none';
-
-                // Wider layout means fewer wrapped lines, so recalculate once
-                // after the width correction and use the final scale.
-                const correctedContentH = Math.max(inner.scrollHeight, text.scrollHeight + safeTop + safeBottom);
-                scale = Math.min(1, availableH / Math.max(1, correctedContentH));
-                inner.style.width = `${viewportW / scale}px`;
-            } else {
-                inner.style.width = '100vw';
-                inner.style.maxWidth = '100%';
-            }
-
-            inner.style.transform = `scale(${scale})`;
-            inner.style.transformOrigin = 'top center';
-            inner.style.marginLeft = 'auto';
-            inner.style.marginRight = 'auto';
-        });
+        container.style.overflowY = 'auto';
+        shell.style.width = '100%';
+        shell.style.maxWidth = '750px';
+        shell.style.margin = '0 auto';
+        image.style.width = '100%';
+        image.style.height = 'auto';
+        image.style.maxWidth = '100%';
+        image.style.display = 'block';
+        image.style.objectFit = 'contain';
     }
 
     function scheduleMushafFit() {
@@ -626,7 +430,7 @@ $('page-input').value = page;
             updateBookmarkButton();
         } catch (error) {
             console.error('Failed to load Quran page:', error);
-            container.innerHTML = `<div class="page-error">Unable to load this page. Please check your connection and try again.</div>`;
+            container.innerHTML = `<div class="page-error">تعذر عرض صفحة المصحف المحلية.</div>`;
         } finally {
             setLoading(false);
         }
