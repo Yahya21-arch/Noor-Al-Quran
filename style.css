@@ -1507,3 +1507,16 @@ body.immersive-reader-active .mushaf-paper-image {
 body.immersive-reader-active #verses-container.mushaf-page {
     touch-action: pan-y !important;
 }
+
+/* MUSHAF DARK MODE
+   Keep the original 604 page images untouched. Only change their on-screen
+   appearance when the app is in emerald-dark mode; light mode is 100% original. */
+html[data-theme="emerald-dark"] body.immersive-reader-active .mushaf-paper-image {
+    filter: invert(0.92) hue-rotate(180deg) saturate(0.78) brightness(0.92) contrast(1.05) !important;
+    transition: filter .25s ease;
+}
+
+html[data-theme="light"] body.immersive-reader-active .mushaf-paper-image {
+    filter: none !important;
+    transition: filter .25s ease;
+}
