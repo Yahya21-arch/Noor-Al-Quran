@@ -1,3 +1,21 @@
+/* Noor Al-Quran: offline startup failsafe
+   The loading screen must never depend on internet, API calls, or the
+   Mushaf image cache. This listener is registered before the main app
+   initialization so it can still release the splash if another optional
+   feature throws an error. */
+document.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('loading-screen');
+    if (!splash) return;
+    const releaseSplash = () => {
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        window.setTimeout(() => {
+            if (splash && splash.isConnected) splash.remove();
+        }, 350);
+    };
+    window.setTimeout(releaseSplash, 900);
+}, { once: true });
+
 /*
 --------------------------------------------------
 Project Name : Noor Al-Quran
