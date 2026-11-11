@@ -1,7 +1,9 @@
-/* Noor Al-Quran — TRUE OFFLINE APP SHELL + 604 MUSHAF PAGES */
-const SHELL_CACHE = 'noor-app-shell-v6';
-const MUSHAF_CACHE = 'noor-mushaf-pages-v6';
+/* Noor Al-Quran — fast resumable offline cache for all 604 Mushaf pages */
+const SHELL_CACHE = 'noor-app-shell-v7';
+const MUSHAF_CACHE = 'noor-mushaf-pages-v6'; // Keep v6 to preserve pages already downloaded.
 const TOTAL_PAGES = 604;
+const CONCURRENCY = 8;
+const MAX_RETRIES = 2;
 
 const pageUrl = n =>
   new URL(`mushaf-pages/page-${String(n).padStart(3, '0')}.jpg`, self.registration.scope).href;
@@ -12,39 +14,159 @@ const shellPaths = [
   './app.js',
   './style.css',
   './sw.js',
+  './offline-download.js',
   './privacy-policy.html',
   './adhkar.js',
   './adhkar.css'
 ];
 
+let activeMushafDownload = null;
+
 async function cacheOne(cache, url) {
   try {
-    const response = await fetch(url, { cache: 'no-cache' });
+    const response = await fetch(url);
     if (response.ok) await cache.put(url, response.clone());
   } catch (_) {}
 }
 
 async function cacheAppShell() {
   const cache = await caches.open(SHELL_CACHE);
-  for (const path of shellPaths) {
-    await cacheOne(cache, new URL(path, self.registration.scope).href);
+  await Promise.all(
+    shellPaths.map(path =>
+      cacheOne(cache, new URL(path, self.registration.scope).href)
+    )
+  );
+}
+
+async function notifyClients(message) {
+  const clientsList = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  });
+  for (const client of clientsList) {
+    client.postMessage(message);
   }
 }
 
-async function cacheAllPages() {
-  const cache = await caches.open(MUSHAF_CACHE);
-  for (let page = 1; page <= TOTAL_PAGES; page++) {
-    const url = pageUrl(page);
+async function fetchAndStorePage(cache, page) {
+  const url = pageUrl(page);
+
+  // Resume safely: pages already present are never downloaded again.
+  if (await cache.match(url)) return true;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      if (!await cache.match(url)) {
-        const response = await fetch(url, { cache: 'no-cache' });
-        if (response.ok) await cache.put(url, response.clone());
+      const response = await fetch(url);
+      if (!response || !response.ok) {
+        throw new Error(`HTTP ${response ? response.status : 'no response'}`);
       }
-    } catch (_) {
-      // Keep going: a temporary network failure must not stop the remaining pages.
+
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType && !contentType.toLowerCase().includes('image')) {
+        throw new Error('The response is not an image');
+      }
+
+      await cache.put(url, response.clone());
+
+      // Verify that Cache Storage actually retained this page.
+      if (await cache.match(url)) return true;
+      throw new Error('Cache verification failed');
+    } catch (error) {
+      if (attempt === MAX_RETRIES) break;
+      // Short backoff: retry transient network/server errors without stalling the queue.
+      await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)));
     }
-    if (page % 4 === 0) await new Promise(r => setTimeout(r, 0));
   }
+
+  return false;
+}
+
+async function runMushafDownload() {
+  const cache = await caches.open(MUSHAF_CACHE);
+  let nextPage = 1;
+  let cachedCount = 0;
+  let processedCount = 0;
+  const failedPages = [];
+
+  await notifyClients({
+    type: 'MUSHAF_CACHE_PROGRESS',
+    cached: 0,
+    total: TOTAL_PAGES,
+    percent: 0,
+    state: 'checking'
+  });
+
+  async function worker() {
+    while (true) {
+      const page = nextPage++;
+      if (page > TOTAL_PAGES) return;
+
+      const success = await fetchAndStorePage(cache, page);
+      processedCount++;
+
+      if (success) cachedCount++;
+      else failedPages.push(page);
+
+      // Send genuine progress as pages are verified in Cache Storage.
+      await notifyClients({
+        type: 'MUSHAF_CACHE_PROGRESS',
+        cached: cachedCount,
+        processed: processedCount,
+        total: TOTAL_PAGES,
+        percent: Math.floor((cachedCount / TOTAL_PAGES) * 100),
+        state: 'downloading'
+      });
+    }
+  }
+
+  // Eight simultaneous workers provide a much shorter download time
+  // without opening hundreds of connections at once on mobile devices.
+  await Promise.all(
+    Array.from({ length: CONCURRENCY }, () => worker())
+  );
+
+  // Final verification, not just a count of successful fetch responses.
+  let verifiedCount = 0;
+  for (let page = 1; page <= TOTAL_PAGES; page++) {
+    if (await cache.match(pageUrl(page))) verifiedCount++;
+  }
+
+  if (verifiedCount === TOTAL_PAGES) {
+    await notifyClients({
+      type: 'MUSHAF_CACHE_COMPLETE',
+      cached: verifiedCount,
+      total: TOTAL_PAGES,
+      percent: 100
+    });
+  } else {
+    await notifyClients({
+      type: 'MUSHAF_CACHE_PARTIAL',
+      cached: verifiedCount,
+      total: TOTAL_PAGES,
+      percent: Math.floor((verifiedCount / TOTAL_PAGES) * 100),
+      failedPages
+    });
+  }
+
+  return verifiedCount === TOTAL_PAGES;
+}
+
+function startMushafDownload() {
+  if (activeMushafDownload) return activeMushafDownload;
+
+  activeMushafDownload = runMushafDownload()
+    .catch(async error => {
+      await notifyClients({
+        type: 'MUSHAF_CACHE_ERROR',
+        message: String(error && error.message ? error.message : error)
+      });
+      return false;
+    })
+    .finally(() => {
+      activeMushafDownload = null;
+    });
+
+  return activeMushafDownload;
 }
 
 self.addEventListener('install', event => {
@@ -57,20 +179,23 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys
-      .filter(k =>
-        (k.startsWith('noor-app-shell-') && k !== SHELL_CACHE) ||
-        (k.startsWith('noor-mushaf-pages-') && k !== MUSHAF_CACHE)
-      )
-      .map(k => caches.delete(k)));
+    await Promise.all(
+      keys
+        .filter(key =>
+          (key.startsWith('noor-app-shell-') && key !== SHELL_CACHE) ||
+          (key.startsWith('noor-mushaf-pages-') && key !== MUSHAF_CACHE)
+        )
+        .map(key => caches.delete(key))
+    );
     await self.clients.claim();
   })());
 });
 
 self.addEventListener('message', event => {
   if (event.data?.type === 'CACHE_ALL_MUSHAF_PAGES') {
-    event.waitUntil(cacheAllPages());
+    event.waitUntil(startMushafDownload());
   }
+
   if (event.data?.type === 'CACHE_APP_SHELL') {
     event.waitUntil(cacheAppShell());
   }
@@ -91,50 +216,43 @@ self.addEventListener('fetch', event => {
       const cached = await cache.match(request);
       if (cached) return cached;
 
-      try {
-        const response = await fetch(request);
-        if (response.ok) await cache.put(request, response.clone());
-        return response;
-      } catch (error) {
-        throw error;
+      const response = await fetch(request);
+      if (response.ok) {
+        try { await cache.put(request, response.clone()); } catch (_) {}
       }
+      return response;
     })());
     return;
   }
 
-  // Cache the whole same-origin app shell. This is the part that was missing:
-  // without it, the browser could have the 604 JPGs but fail to start the app
-  // itself when offline.
   if (url.origin === location.origin) {
     event.respondWith((async () => {
       const cache = await caches.open(SHELL_CACHE);
       const cached = await cache.match(request);
 
-      // Navigation: cache-first so a completely offline launch works.
       if (request.mode === 'navigate') {
         if (cached) return cached;
         try {
           const response = await fetch(request);
-          if (response.ok) await cache.put(request, response.clone());
+          if (response.ok) {
+            try { await cache.put(request, response.clone()); } catch (_) {}
+          }
           return response;
-        } catch (_) {
+        } catch (error) {
           const fallback = await cache.match(
             new URL('./index.html', self.registration.scope).href
           );
           if (fallback) return fallback;
-          throw _;
+          throw error;
         }
       }
 
-      // Static app files: cache-first, then network + update cache.
       if (cached) return cached;
-      try {
-        const response = await fetch(request);
-        if (response.ok) await cache.put(request, response.clone());
-        return response;
-      } catch (_) {
-        throw _;
+      const response = await fetch(request);
+      if (response.ok) {
+        try { await cache.put(request, response.clone()); } catch (_) {}
       }
+      return response;
     })());
   }
 });
