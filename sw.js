@@ -1,43 +1,47 @@
-const CACHE_NAME = 'noor-mushaf-pages-v2';
+/* Noor Al-Quran - Mushaf Offline Service Worker */
+const CACHE_NAME = 'noor-mushaf-pages-v5';
+const TOTAL_PAGES = 604;
+const PAGE_URL = n => `mushaf-pages/page-${String(n).padStart(3, '0')}.jpg`;
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
-});
+self.addEventListener('install', event => { event.waitUntil(self.skipWaiting()); });
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys
-      .filter(key => key.startsWith('noor-mushaf-pages-') && key !== CACHE_NAME)
-      .map(key => caches.delete(key)));
+    await Promise.all(keys.filter(k => k.startsWith('noor-mushaf-pages-') && k !== CACHE_NAME).map(k => caches.delete(k)));
     await self.clients.claim();
   })());
 });
 
+async function cacheAllPages() {
+  const cache = await caches.open(CACHE_NAME);
+  for (let page = 1; page <= TOTAL_PAGES; page++) {
+    const url = PAGE_URL(page);
+    try {
+      if (!await cache.match(url)) {
+        const response = await fetch(url, { cache: 'no-cache' });
+        if (response.ok) await cache.put(url, response.clone());
+      }
+    } catch (_) {}
+    if (page % 8 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+}
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'CACHE_ALL_MUSHAF_PAGES') event.waitUntil(cacheAllPages());
+});
+
 self.addEventListener('fetch', event => {
   const request = event.request;
-  if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
-  const isMushafImage = request.destination === 'image' && /\/mushaf-pages\/page-\d{3}\.jpg$/i.test(url.pathname);
-  if (!isMushafImage) return;
-
-  event.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    if (cached) return cached;
-
-    try {
+  if (url.pathname.includes('/mushaf-pages/page-') && /\.jpg$/i.test(url.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(request);
+      if (cached) return cached;
       const response = await fetch(request);
-      if (response.ok) {
-        await cache.put(request, response.clone());
-      }
+      if (response.ok) await cache.put(request, response.clone());
       return response;
-    } catch (error) {
-      // If the page was previously cached under the same URL, return it.
-      const fallback = await cache.match(request);
-      if (fallback) return fallback;
-      throw error;
-    }
-  })());
+    })());
+  }
 });

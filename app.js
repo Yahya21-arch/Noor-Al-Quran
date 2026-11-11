@@ -186,53 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const TOTAL_PAGES = 604;
 
-    // Fast Mushaf image loading: preload only nearby pages and reuse them.
-    const mushafImagePromises = new Map();
-    const mushafImageMemory = new Map();
-    const MUSHAF_MEMORY_LIMIT = 4;
-
-    function mushafPageUrl(page) {
-        const n = Math.max(1, Math.min(TOTAL_PAGES, Number(page) || 1));
-        return `mushaf-pages/page-${String(n).padStart(3, '0')}.jpg`;
-    }
-
-    function rememberMushafImage(page, image) {
-        mushafImageMemory.delete(page);
-        mushafImageMemory.set(page, image);
-        while (mushafImageMemory.size > MUSHAF_MEMORY_LIMIT) {
-            const oldest = mushafImageMemory.keys().next().value;
-            mushafImageMemory.delete(oldest);
-        }
-    }
-
-    function preloadMushafPage(page) {
-        page = Math.max(1, Math.min(TOTAL_PAGES, Number(page) || 1));
-        if (mushafImageMemory.has(page)) return Promise.resolve(mushafImageMemory.get(page));
-        if (mushafImagePromises.has(page)) return mushafImagePromises.get(page);
-
-        const promise = new Promise((resolve, reject) => {
-            const image = new Image();
-            image.decoding = 'async';
-            image.onload = async () => {
-                try { if (typeof image.decode === 'function') await image.decode(); } catch (_) {}
-                rememberMushafImage(page, image);
-                resolve(image);
-            };
-            image.onerror = () => reject(new Error(`Failed to load Mushaf page ${page}`));
-            image.src = mushafPageUrl(page);
-        }).finally(() => mushafImagePromises.delete(page));
-
-        mushafImagePromises.set(page, promise);
-        return promise;
-    }
-
-    function preloadAdjacentMushafPages(page) {
-        const jobs = [];
-        if (page > 1) jobs.push(preloadMushafPage(page - 1).catch(() => {}));
-        if (page < TOTAL_PAGES) jobs.push(preloadMushafPage(page + 1).catch(() => {}));
-        return Promise.all(jobs);
-    }
-
     const state = {
         currentView: 'home',
         surahs: [],
@@ -364,8 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // The reader uses the exact page artwork extracted from the uploaded
         // King Fahd Complex Madinah Mushaf PDF. No Quran text is reflowed here.
         const pageNumber = Number(data.page || state.currentPage || 1);
-        const pageSrc = mushafPageUrl(pageNumber);
-        const cachedImage = mushafImageMemory.get(pageNumber);
+        const pageSrc = `mushaf-pages/page-${String(pageNumber).padStart(3, '0')}.jpg`;
 
         container.innerHTML = `
             <div class="mushaf-paper-shell" aria-label="صفحة المصحف ${pageNumber}">
@@ -377,13 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      loading="eager">
             </div>
         `;
-
-        // The image was already decoded by the preload manager, so the browser
-        // can paint it immediately without changing its existing dimensions.
-        if (cachedImage) {
-            const image = container.querySelector('.mushaf-paper-image');
-            if (image) image.src = cachedImage.src;
-        }
     }
 
     function fitImmersiveMushafPage() {
@@ -456,9 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function renderReaderPage(page, focusAyahNumber = null, pushHistory = true) {
         page = Math.max(1, Math.min(TOTAL_PAGES, Number(page) || 1));
+        setLoading(true);
         try {
-            // Keep the current page visible until the requested page is ready.
-            await preloadMushafPage(page);
             const data = await getPage(page);
             state.currentPage = page;
             state.currentPageData = data;
@@ -485,8 +429,7 @@ $('page-input').value = page;
                 history.replaceState(null, '', url);
             }
 
-            // Preload only previous + next image; never load all 604 pages.
-            preloadAdjacentMushafPages(page);
+            // Prefetch only adjacent pages (lazy loading).
             Promise.allSettled([
                 page > 1 ? getPage(page - 1) : Promise.resolve(),
                 page < TOTAL_PAGES ? getPage(page + 1) : Promise.resolve()
@@ -497,7 +440,7 @@ $('page-input').value = page;
             console.error('Failed to load Quran page:', error);
             container.innerHTML = `<div class="page-error">تعذر عرض صفحة المصحف المحلية.</div>`;
         } finally {
-            // No full-screen loading overlay during page navigation.
+            setLoading(false);
         }
     }
 
@@ -1115,13 +1058,6 @@ $('page-input').value = page;
         updateTasbeehUI();
     });
 
-    // Register the offline image cache. Only requested Mushaf images are cached.
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(error => {
-            console.warn('Offline cache registration failed:', error);
-        });
-    }
-
     // Initial state.
     const savedFontSize = localStorage.getItem('noorFontSize');
     const savedFontFamily = localStorage.getItem('noorFontFamily');
@@ -1208,4 +1144,31 @@ $('page-input').value = page;
       }
     }
   });
+})();
+
+/* Noor Al-Quran: automatic first-install offline preparation */
+(function setupMushafOffline() {
+    async function registerMushafServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        try {
+            const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+            const requestCache = () => {
+                const worker = navigator.serviceWorker.controller || registration.active || registration.waiting;
+                if (worker) worker.postMessage({ type: 'CACHE_ALL_MUSHAF_PAGES' });
+            };
+            if (navigator.serviceWorker.controller) requestCache();
+            navigator.serviceWorker.addEventListener('controllerchange', requestCache, { once: true });
+            window.addEventListener('online', requestCache);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && navigator.onLine) requestCache();
+            });
+        } catch (error) {
+            console.warn('Mushaf offline preparation could not start:', error);
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', registerMushafServiceWorker, { once: true });
+    } else {
+        registerMushafServiceWorker();
+    }
 })();
