@@ -1,28 +1,17 @@
-Noor Al-Quran — Fast Offline Update
+Noor Al-Quran — Offline download screen integration patch
 
-What this update does
-- Starts/resumes downloading the 604 Mushaf JPG pages automatically after the app is opened online.
-- Downloads up to 8 pages at the same time to reduce total wait time.
-- Skips pages already stored in Cache Storage.
-- Retries temporary failures twice.
-- Verifies that all 604 pages are actually present before showing 100%.
-- Keeps the existing mushaf cache name v6 so previously cached pages are preserved.
+Root cause confirmed in the GitHub repository:
+- index.html did not include offline-download.js.
+- app.js in the repository is empty.
+- The existing offline-download.js expected another part of the app to register sw.js, but no active registration exists in the fetched index/app.js.
 
-Files
-1. sw.js — replace the current service worker file.
-2. offline-download.js — add this new file beside index.html.
-3. index.html — add this script line immediately after the existing app.js script tag:
+Apply this patch:
+1) Replace the repository's offline-download.js with the file in this package.
+2) In index.html, add this line immediately before </body> (after app.js and adhkar.js is fine):
+   <script src="offline-download.js"></script>
+3) Keep sw.js and the mushaf-pages/ folder in the repository root as they currently are.
+4) Deploy the updated GitHub Pages site, then test in a fresh app install / cleared site data.
 
-<script src="offline-download.js"></script>
+The script registers ./sw.js itself, shows a full-screen gate, listens for real cache progress, and only hides the gate after MUSHAF_CACHE_COMPLETE. It requires HTTPS (GitHub Pages is HTTPS).
 
-For example, the bottom of index.html should contain:
-<script src="app.js"></script>
-<script src="offline-download.js"></script>
-<script src="adhkar.js"></script>
-
-Important
-- Do not upload these changes to the live GitHub repository unless you choose to.
-- The 604 images are still downloaded on the first online launch; they are not embedded inside the app installer.
-- The 8-way concurrency is a practical mobile-friendly setting. Actual speed depends on the user's connection, device, hosting limits, and available storage.
-- After the progress reaches 100%, test by closing the app, enabling airplane mode, and opening several different Mushaf pages.
-- If the app-builder WebView does not support Service Worker / Cache Storage, this method will not work inside that wrapper.
+Note: this patch has not been committed to GitHub because the GitHub write action was declined. It has not been tested inside the Android wrapper yet.
