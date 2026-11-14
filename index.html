@@ -347,7 +347,13 @@
 
     <script src="app.js"></script>
     <script src="adhkar.js"></script>
-
-
+    <script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .catch(error => console.error('Offline setup failed:', error));
+    });
+}
+</script>
 </body>
 </html>
