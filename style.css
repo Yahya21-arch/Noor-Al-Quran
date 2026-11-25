@@ -1520,31 +1520,3 @@ html[data-theme="light"] body.immersive-reader-active .mushaf-paper-image {
     filter: none !important;
     transition: filter .25s ease;
 }
-
-
-/* Real SVG icons for the mobile bottom navigation */
-@media(max-width:768px){
-  .bottom-nav-icon{
-    width:32px !important;
-    height:32px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    font-size:0 !important;
-  }
-  .bottom-nav-icon svg{
-    width:25px !important;
-    height:25px !important;
-    display:block !important;
-    color:currentColor !important;
-    overflow:visible !important;
-    transition:transform .22s ease, filter .22s ease !important;
-  }
-  .bottom-nav-btn.active .bottom-nav-icon svg{
-    transform:scale(1.08) !important;
-    filter:drop-shadow(0 0 5px rgba(224,181,75,.28));
-  }
-  .bottom-nav-btn:active .bottom-nav-icon svg{
-    transform:scale(.94) !important;
-  }
-}

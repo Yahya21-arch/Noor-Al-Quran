@@ -1163,30 +1163,3 @@ $('page-input').value = page;
     }
   });
 })();
-
-/* Noor Al-Quran: automatic first-install offline preparation */
-(function setupMushafOffline() {
-    async function registerMushafServiceWorker() {
-        if (!('serviceWorker' in navigator)) return;
-        try {
-            const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-            const requestCache = () => {
-                const worker = navigator.serviceWorker.controller || registration.active || registration.waiting;
-                if (worker) worker.postMessage({ type: 'CACHE_ALL_MUSHAF_PAGES' });
-            };
-            if (navigator.serviceWorker.controller) requestCache();
-            navigator.serviceWorker.addEventListener('controllerchange', requestCache, { once: true });
-            window.addEventListener('online', requestCache);
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible' && navigator.onLine) requestCache();
-            });
-        } catch (error) {
-            console.warn('Mushaf offline preparation could not start:', error);
-        }
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', registerMushafServiceWorker, { once: true });
-    } else {
-        registerMushafServiceWorker();
-    }
-})();

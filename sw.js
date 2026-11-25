@@ -1,5 +1,5 @@
 /* Noor Al-Quran — fast resumable offline cache for all 604 Mushaf pages */
-const SHELL_CACHE = 'noor-app-shell-v7';
+const SHELL_CACHE = 'noor-app-shell-v9';
 const MUSHAF_CACHE = 'noor-mushaf-pages-v6'; // Keep v6 to preserve pages already downloaded.
 const TOTAL_PAGES = 604;
 const CONCURRENCY = 8;
@@ -14,7 +14,6 @@ const shellPaths = [
   './app.js',
   './style.css',
   './sw.js',
-  './offline-download.js',
   './privacy-policy.html',
   './adhkar.js',
   './adhkar.css'
@@ -24,18 +23,47 @@ let activeMushafDownload = null;
 
 async function cacheOne(cache, url) {
   try {
-    const response = await fetch(url);
-    if (response.ok) await cache.put(url, response.clone());
-  } catch (_) {}
+    const response = await fetch(url, { cache: 'reload' });
+    if (!response || !response.ok) return false;
+
+    await cache.put(url, response.clone());
+    return Boolean(await cache.match(url));
+  } catch (_) {
+    return false;
+  }
 }
 
 async function cacheAppShell() {
   const cache = await caches.open(SHELL_CACHE);
-  await Promise.all(
-    shellPaths.map(path =>
-      cacheOne(cache, new URL(path, self.registration.scope).href)
-    )
+  const results = await Promise.all(
+    shellPaths.map(async path => ({
+      path,
+      ok: await cacheOne(
+        cache,
+        new URL(path, self.registration.scope).href
+      )
+    }))
   );
+
+  // Only the core files are required for offline startup. Optional feature
+  // files must never block installation of the Service Worker.
+  const requiredPaths = [
+    './',
+    './index.html',
+    './app.js',
+    './style.css',
+    './sw.js'
+  ];
+
+  const failedRequired = results
+    .filter(result => requiredPaths.includes(result.path) && !result.ok)
+    .map(result => result.path);
+
+  if (failedRequired.length) {
+    throw new Error(
+      `Offline app shell could not be cached: ${failedRequired.join(', ')}`
+    );
+  }
 }
 
 async function notifyClients(message) {
@@ -182,8 +210,7 @@ self.addEventListener('activate', event => {
     await Promise.all(
       keys
         .filter(key =>
-          (key.startsWith('noor-app-shell-') && key !== SHELL_CACHE) ||
-          (key.startsWith('noor-mushaf-pages-') && key !== MUSHAF_CACHE)
+          key.startsWith('noor-app-shell-') && key !== SHELL_CACHE
         )
         .map(key => caches.delete(key))
     );
@@ -241,6 +268,8 @@ self.addEventListener('fetch', event => {
         } catch (error) {
           const fallback = await cache.match(
             new URL('./index.html', self.registration.scope).href
+          ) || await cache.match(
+            new URL('./', self.registration.scope).href
           );
           if (fallback) return fallback;
           throw error;
