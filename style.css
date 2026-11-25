@@ -1520,3 +1520,49 @@ html[data-theme="light"] body.immersive-reader-active .mushaf-paper-image {
     filter: none !important;
     transition: filter .25s ease;
 }
+
+
+/* =========================================================
+   Noor Al-Quran — Premium Outline Bottom Navigation Icons
+   Icons are inline SVG so they remain crisp and work offline.
+   ========================================================= */
+@media (max-width:768px) {
+  .bottom-nav-icon {
+    width:30px !important;
+    height:30px !important;
+    display:grid !important;
+    place-items:center !important;
+    font-size:0 !important;
+    line-height:0 !important;
+    color:rgba(239,235,222,.76) !important;
+    transition:color .22s ease, transform .22s ease, filter .22s ease !important;
+  }
+  .bottom-nav-icon svg {
+    display:block;
+    width:24px;
+    height:24px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.7;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
+  }
+  .bottom-nav-btn.active .bottom-nav-icon {
+    color:#e7bd58 !important;
+    filter:drop-shadow(0 0 5px rgba(231,189,88,.24));
+  }
+  .bottom-nav-btn.active .bottom-nav-icon svg {
+    stroke-width:1.95;
+  }
+  [data-theme="light"] .bottom-nav-icon {
+    color:#697386 !important;
+  }
+  [data-theme="light"] .bottom-nav-btn.active .bottom-nav-icon {
+    color:#9a741c !important;
+  }
+}
+@media(max-width:390px) {
+  .bottom-nav-icon { width:28px !important; height:28px !important; }
+  .bottom-nav-icon svg { width:22px; height:22px; }
+}
