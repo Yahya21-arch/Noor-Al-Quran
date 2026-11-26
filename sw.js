@@ -1,5 +1,5 @@
 /* Noor Al-Quran — fast resumable offline cache for all 604 Mushaf pages */
-const SHELL_CACHE = 'noor-app-shell-v9';
+const SHELL_CACHE = 'noor-app-shell-v8';
 const MUSHAF_CACHE = 'noor-mushaf-pages-v6'; // Keep v6 to preserve pages already downloaded.
 const TOTAL_PAGES = 604;
 const CONCURRENCY = 8;
@@ -45,8 +45,11 @@ async function cacheAppShell() {
     }))
   );
 
-  // Only the core files are required for offline startup. Optional feature
-  // files must never block installation of the Service Worker.
+  // These files are required for the app to start offline. If any of them
+  // cannot be cached, fail the install so the previous active SW remains in use.
+  // Only files that are actually bundled are required for offline startup.
+  // Optional feature files must never prevent the Service Worker from
+  // installing, otherwise the whole app falls back to the network offline.
   const requiredPaths = [
     './',
     './index.html',
@@ -210,7 +213,8 @@ self.addEventListener('activate', event => {
     await Promise.all(
       keys
         .filter(key =>
-          key.startsWith('noor-app-shell-') && key !== SHELL_CACHE
+          (key.startsWith('noor-app-shell-') && key !== SHELL_CACHE) ||
+          (key.startsWith('noor-mushaf-pages-') && key !== MUSHAF_CACHE)
         )
         .map(key => caches.delete(key))
     );
@@ -268,8 +272,6 @@ self.addEventListener('fetch', event => {
         } catch (error) {
           const fallback = await cache.match(
             new URL('./index.html', self.registration.scope).href
-          ) || await cache.match(
-            new URL('./', self.registration.scope).href
           );
           if (fallback) return fallback;
           throw error;
